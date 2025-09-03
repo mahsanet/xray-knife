@@ -398,6 +398,12 @@ func (v *Vless) BuildOutboundDetourConfig(allowInsecure bool) (*conf.OutboundDet
 			UserAgent:           "",
 		}
 		v.Flow = ""
+	case "quic":
+		s.QUICSettings = &conf.QUICConfig{
+			Header:   nil,
+			Security: v.QuicSecurity,
+			Key:      v.Key,
+		}
 	}
 
 	if v.Security == "tls" {

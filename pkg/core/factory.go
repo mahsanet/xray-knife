@@ -91,7 +91,7 @@ func (c *AutomaticCore) selectCoreForLink(configLink string) (Core, error) {
 	switch uri.Scheme {
 	case protocol.Hysteria2Identifier, "hy2":
 		return c.singboxCore, nil
-	case protocol.VmessIdentifier, protocol.VlessIdentifier, protocol.TrojanIdentifier, protocol.ShadowsocksIdentifier, protocol.SocksIdentifier, protocol.WireguardIdentifier:
+	case protocol.VmessIdentifier, protocol.VlessIdentifier, protocol.MVlessIdentifier, protocol.TrojanIdentifier, protocol.ShadowsocksIdentifier, protocol.SocksIdentifier, protocol.WireguardIdentifier:
 		return c.xrayCore, nil
 	default:
 		return nil, fmt.Errorf("unsupported protocol for automatic core: %s", uri.Scheme)
