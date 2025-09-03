@@ -17,7 +17,7 @@ const browserUA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 
 // VMess link. The three protocols share it so their stream settings are
 // built by one code path.
 type transportSpec struct {
-	Network     string // tcp, raw, ws, grpc, xhttp, splithttp, httpupgrade, kcp
+	Network     string // tcp, raw, ws, grpc, xhttp, splithttp, httpupgrade, kcp, quic
 	HeaderType  string // "http" enables TCP HTTP obfuscation
 	Host        string // Host header(s), comma-separated for TCP HTTP obfuscation
 	Path        string
@@ -25,6 +25,10 @@ type transportSpec struct {
 	ServiceName string // gRPC
 	Authority   string // gRPC
 	Extra       string // xhttp "extra" (raw JSON)
+
+	// QUIC (GFW-knocker core only)
+	QuicSecurity string // packet encryption: "none", "aes-128-gcm", ...
+	QuicKey      string
 
 	Security             string // "", "none", "tls" or "reality"
 	SNI                  string
@@ -116,7 +120,10 @@ func (t *transportSpec) streamConfig(outbound bool) (*conf.StreamConfig, error) 
 			HealthCheckTimeout: 20,
 			InitialWindowsSize: 65536,
 		}
-	case "h2", "http", "h3", "quic":
+	case "quic":
+		// Removed from upstream xray-core; the GFW-knocker core keeps it.
+		s.QUICSettings = &conf.QUICConfig{Security: t.QuicSecurity, Key: t.QuicKey}
+	case "h2", "http", "h3":
 		return nil, fmt.Errorf("transport %q was removed from xray-core; use the sing-box or automatic core for this link", netName)
 	default:
 		return nil, fmt.Errorf("unsupported transport %q", t.Network)

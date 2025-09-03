@@ -17,13 +17,23 @@ func NewVless(link string) Protocol {
 	return &Vless{OrigLink: link}
 }
 
+// NewMVless parses an mvless:// link. mvless takes the same settings as
+// VLESS, so it shares the parser and builders; only the protocol name the
+// GFW-knocker core runs it as differs.
+func NewMVless(link string) Protocol {
+	return &Vless{OrigLink: link, mvless: true}
+}
+
 func (v *Vless) Name() string {
+	if v.mvless {
+		return protocol.MVlessIdentifier
+	}
 	return "vless"
 }
 
 func (v *Vless) Parse() error {
-	if !strings.HasPrefix(v.OrigLink, protocol.VlessIdentifier+"://") {
-		return fmt.Errorf("vless unreconized: %s", v.OrigLink)
+	if !strings.HasPrefix(v.OrigLink, v.Name()+"://") {
+		return fmt.Errorf("%s unreconized: %s", v.Name(), v.OrigLink)
 	}
 
 	base, remark := splitRemark(v.OrigLink)
@@ -195,7 +205,7 @@ func (v *Vless) GetLink() string {
 		return v.OrigLink
 	} else {
 		baseURL := url.URL{
-			Scheme: "vless",
+			Scheme: v.Name(),
 			User:   url.User(v.ID),
 			Host:   net.JoinHostPort(v.Address, v.Port),
 		}
@@ -279,6 +289,8 @@ func (v *Vless) transport() transportSpec {
 		Mode:                 v.Mode,
 		ServiceName:          v.ServiceName,
 		Authority:            v.Authority,
+		QuicSecurity:         v.QuicSecurity,
+		QuicKey:              v.Key,
 		Extra:                v.Extra,
 		Security:             v.Security,
 		SNI:                  v.SNI,

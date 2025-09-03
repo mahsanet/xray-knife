@@ -129,7 +129,7 @@ func (c *AutomaticCore) selectCoreForLink(configLink string) (Core, error) {
 			return nil, errors.New("not a proxy share link (an http(s) proxy needs host:port and no path)")
 		}
 		return c.singboxCore, nil
-	case protocol.VmessIdentifier, protocol.VlessIdentifier, protocol.TrojanIdentifier, protocol.ShadowsocksIdentifier,
+	case protocol.VmessIdentifier, protocol.VlessIdentifier, protocol.MVlessIdentifier, protocol.TrojanIdentifier, protocol.ShadowsocksIdentifier,
 		protocol.SocksIdentifier, "socks5", "socks5h", protocol.WireguardIdentifier:
 		return c.xrayCore, nil
 	default:

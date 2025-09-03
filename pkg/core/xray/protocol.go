@@ -41,6 +41,8 @@ func (c *Core) CreateProtocol(configLink string) (protocol.Protocol, error) {
 		return NewVmess(configLink), nil
 	case protocol.VlessIdentifier:
 		return NewVless(configLink), nil
+	case protocol.MVlessIdentifier:
+		return NewMVless(configLink), nil
 	case protocol.ShadowsocksIdentifier:
 		return NewShadowsocks(configLink), nil
 	case protocol.TrojanIdentifier:
@@ -59,7 +61,7 @@ func (c *Core) CreateProtocol(configLink string) (protocol.Protocol, error) {
 // SingboxReason reports why a parsed link should run on sing-box rather
 // than xray-core, or "" when xray can carry it. insecure is the caller's
 // global --insecure setting. Reasons:
-//   - a transport xray-core removed (h2/http, quic),
+//   - a transport xray-core removed (h2/http, h3),
 //   - a Shadowsocks plugin or legacy stream cipher,
 //   - a request to skip TLS verification: xray-core can only pin or verify,
 //     so self-signed servers would always fail there. Links that pin their
@@ -82,6 +84,9 @@ func SingboxReason(p Protocol, insecure bool) string {
 		}
 		return v.xrayUnsupported()
 	case *Vless:
+		if v.mvless {
+			return "" // sing-box has no mvless
+		}
 		ts := v.transport()
 		if enc := strings.ToLower(v.Encryption); enc != "" && enc != "none" {
 			// VLESS encryption is xray-only; sing-box would drop it. Keep the
@@ -108,7 +113,7 @@ func SingboxReason(p Protocol, insecure bool) string {
 // removedTransport reports a transport only sing-box still implements.
 func removedTransport(t *transportSpec) string {
 	switch n := t.network(); n {
-	case "h2", "http", "quic", "h3":
+	case "h2", "http", "h3":
 		return "transport " + n + " (removed from xray-core)"
 	}
 	return ""

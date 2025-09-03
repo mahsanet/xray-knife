@@ -256,6 +256,8 @@ func (t *Trojan) transport() transportSpec {
 		Mode:                 t.Mode,
 		ServiceName:          t.ServiceName,
 		Authority:            t.Authority,
+		QuicSecurity:         t.QuicSecurity,
+		QuicKey:              t.Key,
 		Security:             t.Security,
 		SNI:                  t.SNI,
 		ALPN:                 t.ALPN,

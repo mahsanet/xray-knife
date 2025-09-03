@@ -54,6 +54,7 @@ type Vmess struct {
 }
 
 type Vless struct {
+	mvless               bool   // mvless:// link: VLESS settings, run as mvless on the GFW-knocker core
 	LinkVersion          string `json:"-"`
 	ID                   string `json:"id"`  // UUID
 	Address              string `json:"add"` // HOST:PORT
