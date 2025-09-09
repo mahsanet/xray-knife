@@ -333,7 +333,7 @@ func (t *Trojan) BuildOutboundDetourConfig(allowInsecure bool) (*conf.OutboundDe
 		t.Flow = ""
 	case "quic":
 		s.QUICSettings = &conf.QUICConfig{
-			Header:   nil,
+			Header:   json.RawMessage(fmt.Sprintf(`{ "type": "%s" }`, t.HeaderType)),
 			Security: t.QuicSecurity,
 			Key:      t.Key,
 		}
