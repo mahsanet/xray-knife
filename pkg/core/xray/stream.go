@@ -122,7 +122,12 @@ func (t *transportSpec) streamConfig(outbound bool) (*conf.StreamConfig, error) 
 		}
 	case "quic":
 		// Removed from upstream xray-core; the GFW-knocker core keeps it.
-		s.QUICSettings = &conf.QUICConfig{Security: t.QuicSecurity, Key: t.QuicKey}
+		headerType := t.HeaderType
+		if headerType == "" {
+			headerType = "none"
+		}
+		header, _ := json.Marshal(map[string]string{"type": headerType})
+		s.QUICSettings = &conf.QUICConfig{Header: header, Security: t.QuicSecurity, Key: t.QuicKey}
 	case "h2", "http", "h3":
 		return nil, fmt.Errorf("transport %q was removed from xray-core; use the sing-box or automatic core for this link", netName)
 	default:
