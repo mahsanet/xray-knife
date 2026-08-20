@@ -4,10 +4,10 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/GFW-knocker/Xray-core/common/geodata"
+	xnet "github.com/GFW-knocker/Xray-core/common/net"
 	"github.com/lilendian0x00/xray-knife/v11/pkg/core/mtproto"
 	"github.com/lilendian0x00/xray-knife/v11/pkg/core/protocol"
-	"github.com/xtls/xray-core/common/geodata"
-	xnet "github.com/xtls/xray-core/common/net"
 )
 
 // NormalizeLink trims a share link and lower-cases its scheme, so

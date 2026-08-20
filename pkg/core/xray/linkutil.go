@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	xnet "github.com/xtls/xray-core/common/net"
+	xnet "github.com/GFW-knocker/Xray-core/common/net"
 )
 
 // splitRemark separates the "#remark" fragment from a share link so that

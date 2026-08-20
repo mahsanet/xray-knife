@@ -6,7 +6,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/xtls/xray-core/infra/conf"
+	"github.com/GFW-knocker/Xray-core/infra/conf"
 )
 
 // browserUA is sent on outbound HTTP-based transports so the handshake

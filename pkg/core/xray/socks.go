@@ -11,8 +11,8 @@ import (
 	"github.com/lilendian0x00/xray-knife/v11/pkg/core/protocol"
 	"github.com/lilendian0x00/xray-knife/v11/utils"
 
+	"github.com/GFW-knocker/Xray-core/infra/conf"
 	"github.com/fatih/color"
-	"github.com/xtls/xray-core/infra/conf"
 )
 
 func NewSocks(link string) Protocol {
