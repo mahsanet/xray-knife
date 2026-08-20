@@ -6,8 +6,8 @@ import (
 	"net"
 	"strconv"
 
-	net2 "github.com/xtls/xray-core/common/net"
-	"github.com/xtls/xray-core/infra/conf"
+	net2 "github.com/GFW-knocker/Xray-core/common/net"
+	"github.com/GFW-knocker/Xray-core/infra/conf"
 
 	"github.com/lilendian0x00/xray-knife/v10/pkg/core/protocol"
 )

@@ -20,7 +20,7 @@ import (
 	"github.com/sagernet/sing/common/json/badoption"
 	"github.com/sagernet/sing/common/logger"
 	"github.com/sagernet/sing/service"
-	"github.com/xtls/xray-core/infra/conf"
+	"github.com/GFW-knocker/Xray-core/infra/conf"
 )
 
 func NewTrojan(link string) Protocol {

@@ -394,8 +394,8 @@ func (v *MVless) BuildOutboundDetourConfig(allowInsecure bool) (*conf.OutboundDe
 			fp = "chrome"
 		}
 		s.TLSSettings = &conf.TLSConfig{
-			Fingerprint: fp,
-			Insecure:    insecureFlag,
+			Fingerprint:   fp,
+			AllowInsecure: insecureFlag,
 		}
 		if v.SNI != "" {
 			s.TLSSettings.ServerName = v.SNI

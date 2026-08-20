@@ -9,13 +9,13 @@ import (
 
 	"github.com/lilendian0x00/xray-knife/v10/pkg/core/protocol"
 
-	"github.com/xtls/xray-core/app/dispatcher"
-	applog "github.com/xtls/xray-core/app/log"
-	"github.com/xtls/xray-core/app/proxyman"
-	xraynet "github.com/xtls/xray-core/common/net"
-	"github.com/xtls/xray-core/common/serial"
-	"github.com/xtls/xray-core/core"
-	"github.com/xtls/xray-core/infra/conf"
+	"github.com/GFW-knocker/Xray-core/app/dispatcher"
+	applog "github.com/GFW-knocker/Xray-core/app/log"
+	"github.com/GFW-knocker/Xray-core/app/proxyman"
+	xraynet "github.com/GFW-knocker/Xray-core/common/net"
+	"github.com/GFW-knocker/Xray-core/common/serial"
+	"github.com/GFW-knocker/Xray-core/core"
+	"github.com/GFW-knocker/Xray-core/infra/conf"
 )
 
 // MakeChainedInstance builds an xray-core instance with multiple outbounds

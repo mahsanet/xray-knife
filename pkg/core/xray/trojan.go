@@ -8,13 +8,13 @@ import (
 	"strconv"
 	"strings"
 
-	net2 "github.com/xtls/xray-core/common/net"
+	net2 "github.com/GFW-knocker/Xray-core/common/net"
 
 	"github.com/lilendian0x00/xray-knife/v10/pkg/core/protocol"
 	"github.com/lilendian0x00/xray-knife/v10/utils"
 
 	"github.com/fatih/color"
-	"github.com/xtls/xray-core/infra/conf"
+	"github.com/GFW-knocker/Xray-core/infra/conf"
 )
 
 func NewTrojan(link string) Protocol {

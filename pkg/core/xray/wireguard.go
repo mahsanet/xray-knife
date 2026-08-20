@@ -12,7 +12,7 @@ import (
 	"github.com/lilendian0x00/xray-knife/v10/pkg/core/protocol"
 
 	"github.com/fatih/color"
-	"github.com/xtls/xray-core/infra/conf"
+	"github.com/GFW-knocker/Xray-core/infra/conf"
 )
 
 // parseReserved converts a WireGuard "reserved" link value into bytes.

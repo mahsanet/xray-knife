@@ -32,7 +32,7 @@ import (
 	"github.com/lilendian0x00/xray-knife/v10/pkg/proxy/sysproxy"
 	"github.com/lilendian0x00/xray-knife/v10/utils"
 	"github.com/lilendian0x00/xray-knife/v10/utils/customlog"
-	"github.com/xtls/xray-core/common/uuid"
+	"github.com/GFW-knocker/Xray-core/common/uuid"
 )
 
 // Rotation tuning defaults.
