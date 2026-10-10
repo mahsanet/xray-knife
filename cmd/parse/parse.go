@@ -13,7 +13,7 @@ import (
 	"github.com/lilendian0x00/xray-knife/v11/pkg/core/xray"
 	"github.com/lilendian0x00/xray-knife/v11/utils"
 	"github.com/lilendian0x00/xray-knife/v11/utils/customlog"
-	"github.com/xtls/xray-core/infra/conf"
+	"github.com/GFW-knocker/Xray-core/infra/conf"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -15,19 +14,19 @@ import (
 	"github.com/lilendian0x00/xray-knife/v11/pkg/core/protocol"
 	"github.com/lilendian0x00/xray-knife/v11/pkg/netbind"
 
-	"github.com/xtls/xray-core/app/dispatcher"
-	applog "github.com/xtls/xray-core/app/log"
-	"github.com/xtls/xray-core/app/proxyman"
-	commlog "github.com/xtls/xray-core/common/log"
-	xraynet "github.com/xtls/xray-core/common/net"
-	"github.com/xtls/xray-core/common/serial"
-	"github.com/xtls/xray-core/core"
-	"github.com/xtls/xray-core/infra/conf"
+	"github.com/GFW-knocker/Xray-core/app/dispatcher"
+	applog "github.com/GFW-knocker/Xray-core/app/log"
+	"github.com/GFW-knocker/Xray-core/app/proxyman"
+	commlog "github.com/GFW-knocker/Xray-core/common/log"
+	xraynet "github.com/GFW-knocker/Xray-core/common/net"
+	"github.com/GFW-knocker/Xray-core/common/serial"
+	"github.com/GFW-knocker/Xray-core/core"
+	"github.com/GFW-knocker/Xray-core/infra/conf"
 
 	// The following deps are necessary as they register handlers in their init functions.
-	_ "github.com/xtls/xray-core/app/dispatcher"
-	_ "github.com/xtls/xray-core/app/proxyman/inbound"
-	_ "github.com/xtls/xray-core/app/proxyman/outbound"
+	_ "github.com/GFW-knocker/Xray-core/app/dispatcher"
+	_ "github.com/GFW-knocker/Xray-core/app/proxyman/inbound"
+	_ "github.com/GFW-knocker/Xray-core/app/proxyman/outbound"
 )
 
 // xray-core keeps one process-global log handler. Every NewXrayService
@@ -53,29 +52,6 @@ func installLogHandler(verbose bool) {
 		commlog.RegisterHandler(&noOpHandler{})
 		logInstalled = true
 	}
-}
-
-var insecureWarning sync.Once
-
-// warnInsecure tells the user once per process that xray-core ignores an
-// insecure-TLS request (see transportSpec.applyOutboundSecurity).
-func (c *Core) warnInsecure(p Protocol) {
-	type insecureRequester interface{ wantsInsecure() bool }
-	r, ok := p.(insecureRequester)
-	if !ok || !(c.AllowInsecure || r.wantsInsecure()) {
-		return
-	}
-	if ts, ok := p.(interface{ transport() transportSpec }); ok {
-		spec := ts.transport()
-		if spec.security() != "tls" || spec.PinnedPeerCertSha256 != "" {
-			return
-		}
-	}
-	insecureWarning.Do(func() {
-		fmt.Fprintln(os.Stderr, "xray-knife: xray-core cannot skip TLS certificate verification; "+
-			"allowInsecure/--insecure has no effect on the xray core. Use the automatic or sing-box core, "+
-			"or pin the certificate with pcs=<sha256>.")
-	})
 }
 
 // noOpHandler discards all log messages.
@@ -412,7 +388,6 @@ func (c *Core) MakeInstance(ctx context.Context, outbound protocol.Protocol) (pr
 	if err != nil {
 		return nil, err
 	}
-	c.warnInsecure(out)
 	ob, err := out.BuildOutboundDetourConfig(c.AllowInsecure)
 	if err != nil {
 		return nil, err

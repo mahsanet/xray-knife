@@ -17,8 +17,8 @@ func TestAutomaticCoreRoutesByCapability(t *testing.T) {
 		singbox  bool
 	}{
 		{"plain tls stays on xray", "vless://" + id + "@1.2.3.4:443?security=tls&sni=a.com&type=ws", false, false},
-		{"link insecure moves to sing-box", "vless://" + id + "@1.2.3.4:443?security=tls&sni=a.com&type=ws&allowInsecure=1", false, true},
-		{"global insecure moves to sing-box", "trojan://pass@1.2.3.4:443?sni=a.com", true, true},
+		{"link insecure stays on xray", "vless://" + id + "@1.2.3.4:443?security=tls&sni=a.com&type=ws&allowInsecure=1", false, false},
+		{"global insecure stays on xray", "trojan://pass@1.2.3.4:443?sni=a.com", true, false},
 		{"pinned cert stays on xray", "vless://" + id + "@1.2.3.4:443?security=tls&type=tcp&allowInsecure=1&pcs=" + strings.Repeat("ab", 32), false, false},
 		{"reality stays on xray", "vless://" + id + "@1.2.3.4:443?security=reality&pbk=k&sid=1&sni=a.com", true, false},
 		{"xhttp stays on xray", "vless://" + id + "@1.2.3.4:443?security=tls&type=xhttp&sni=a.com", true, false},
@@ -28,6 +28,7 @@ func TestAutomaticCoreRoutesByCapability(t *testing.T) {
 		{"ss plugin", "ss://aes-128-gcm:pass@1.2.3.4:8388/?plugin=obfs-local%3Bobfs%3Dhttp", false, true},
 		{"aead ss", "ss://aes-128-gcm:pass@1.2.3.4:8388", false, false},
 		{"upper-case scheme", "VLESS://" + id + "@1.2.3.4:443?security=none", false, false},
+		{"mvless stays on xray", "mvless://" + id + "@1.2.3.4:443?security=tls&sni=a.com&type=h2", true, false},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

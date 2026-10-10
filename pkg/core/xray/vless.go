@@ -10,20 +10,27 @@ import (
 	"github.com/lilendian0x00/xray-knife/v11/pkg/core/protocol"
 
 	"github.com/fatih/color"
-	"github.com/xtls/xray-core/infra/conf"
+	"github.com/GFW-knocker/Xray-core/infra/conf"
 )
 
 func NewVless(link string) Protocol {
 	return &Vless{OrigLink: link}
 }
 
+func NewMVless(link string) Protocol {
+	return &Vless{OrigLink: link, MVless: true}
+}
+
 func (v *Vless) Name() string {
-	return "vless"
+	if v.MVless {
+		return protocol.MVlessIdentifier
+	}
+	return protocol.VlessIdentifier
 }
 
 func (v *Vless) Parse() error {
-	if !strings.HasPrefix(v.OrigLink, protocol.VlessIdentifier+"://") {
-		return fmt.Errorf("vless unreconized: %s", v.OrigLink)
+	if !strings.HasPrefix(v.OrigLink, v.Name()+"://") {
+		return fmt.Errorf("%s unreconized: %s", v.Name(), v.OrigLink)
 	}
 
 	base, remark := splitRemark(v.OrigLink)
@@ -195,7 +202,7 @@ func (v *Vless) GetLink() string {
 		return v.OrigLink
 	} else {
 		baseURL := url.URL{
-			Scheme: "vless",
+			Scheme: v.Name(),
 			User:   url.User(v.ID),
 			Host:   net.JoinHostPort(v.Address, v.Port),
 		}
@@ -280,6 +287,8 @@ func (v *Vless) transport() transportSpec {
 		ServiceName:          v.ServiceName,
 		Authority:            v.Authority,
 		Extra:                v.Extra,
+		QuicSecurity:         v.QuicSecurity,
+		Key:                  v.Key,
 		Security:             v.Security,
 		SNI:                  v.SNI,
 		ALPN:                 v.ALPN,
@@ -299,7 +308,7 @@ func (v *Vless) wantsInsecure() bool { return truthy(v.AllowInsecure) }
 
 func (v *Vless) BuildOutboundDetourConfig(allowInsecure bool) (*conf.OutboundDetourConfig, error) {
 	ts := v.transport()
-	s, err := ts.outboundStream()
+	s, err := ts.outboundStream(allowInsecure || v.wantsInsecure())
 	if err != nil {
 		return nil, err
 	}

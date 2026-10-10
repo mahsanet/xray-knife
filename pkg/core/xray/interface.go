@@ -3,7 +3,7 @@ package xray
 import (
 	"github.com/lilendian0x00/xray-knife/v11/pkg/core/protocol"
 
-	"github.com/xtls/xray-core/infra/conf"
+	"github.com/GFW-knocker/Xray-core/infra/conf"
 )
 
 type Protocol interface {
@@ -86,6 +86,7 @@ type Vless struct {
 	CertFile             string `json:"-"`
 	KeyFile              string `json:"-"`
 	OrigLink             string `json:"-"` // Original link
+	MVless               bool   `json:"-"` // mvless:// link: the GFW-knocker core's VLESS variant
 }
 
 type Shadowsocks struct {
@@ -122,6 +123,7 @@ type Trojan struct {
 	Authority            string `json:"authority"`   // GRPC
 	ServiceName          string `json:"serviceName"` // GRPC
 	Mode                 string `json:"mode"`        // XHTTP, GRPC
+	Extra                string `json:"extra"`       // XHTTP - EXTRA
 
 	// Yes, Trojan can have reality too xD
 	PublicKey     string `json:"pbk"`

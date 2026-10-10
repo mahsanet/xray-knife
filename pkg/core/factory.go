@@ -82,7 +82,6 @@ type AutomaticCore struct {
 	xrayCore    Core
 	singboxCore Core
 	mtprotoCore Core
-	insecure    bool
 }
 
 func (c *AutomaticCore) Name() string {
@@ -100,7 +99,6 @@ func NewAutomaticCoreWith(opts FactoryOptions) Core {
 		xrayCore:    newXray(opts),
 		singboxCore: newSingbox(opts),
 		mtprotoCore: mtproto.NewCore(),
-		insecure:    opts.InsecureTLS,
 	}
 }
 
@@ -129,7 +127,7 @@ func (c *AutomaticCore) selectCoreForLink(configLink string) (Core, error) {
 			return nil, errors.New("not a proxy share link (an http(s) proxy needs host:port and no path)")
 		}
 		return c.singboxCore, nil
-	case protocol.VmessIdentifier, protocol.VlessIdentifier, protocol.TrojanIdentifier, protocol.ShadowsocksIdentifier,
+	case protocol.VmessIdentifier, protocol.VlessIdentifier, protocol.MVlessIdentifier, protocol.TrojanIdentifier, protocol.ShadowsocksIdentifier,
 		protocol.SocksIdentifier, "socks5", "socks5h", protocol.WireguardIdentifier:
 		return c.xrayCore, nil
 	default:
@@ -155,7 +153,7 @@ func (c *AutomaticCore) preferSingbox(link string) bool {
 		return false // let the xray parser report the problem
 	}
 	xp, ok := p.(xray.Protocol)
-	return ok && xray.SingboxReason(xp, c.insecure) != ""
+	return ok && xray.SingboxReason(xp) != ""
 }
 
 // CreateProtocol for AutomaticCore dispatches to the correct underlying core.

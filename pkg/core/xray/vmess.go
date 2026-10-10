@@ -12,7 +12,7 @@ import (
 	"github.com/lilendian0x00/xray-knife/v11/utils"
 
 	"github.com/fatih/color"
-	"github.com/xtls/xray-core/infra/conf"
+	"github.com/GFW-knocker/Xray-core/infra/conf"
 )
 
 func NewVmess(link string) Protocol {
@@ -306,7 +306,7 @@ func (v *Vmess) BuildOutboundDetourConfig(allowInsecure bool) (*conf.OutboundDet
 	if ts.security() == "reality" {
 		return nil, fmt.Errorf("vmess does not support REALITY")
 	}
-	s, err := ts.outboundStream()
+	s, err := ts.outboundStream(allowInsecure || v.wantsInsecure())
 	if err != nil {
 		return nil, err
 	}

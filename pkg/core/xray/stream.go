@@ -6,7 +6,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/xtls/xray-core/infra/conf"
+	"github.com/GFW-knocker/Xray-core/infra/conf"
 )
 
 // browserUA is sent on outbound HTTP-based transports so the handshake
@@ -17,14 +17,16 @@ const browserUA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 
 // VMess link. The three protocols share it so their stream settings are
 // built by one code path.
 type transportSpec struct {
-	Network     string // tcp, raw, ws, grpc, xhttp, splithttp, httpupgrade, kcp
-	HeaderType  string // "http" enables TCP HTTP obfuscation
-	Host        string // Host header(s), comma-separated for TCP HTTP obfuscation
-	Path        string
-	Mode        string // xhttp mode, or "multi" for gRPC multiMode
-	ServiceName string // gRPC
-	Authority   string // gRPC
-	Extra       string // xhttp "extra" (raw JSON)
+	Network      string // tcp, raw, ws, grpc, xhttp, splithttp, httpupgrade, kcp
+	HeaderType   string // "http" enables TCP HTTP obfuscation
+	Host         string // Host header(s), comma-separated for TCP HTTP obfuscation
+	Path         string
+	Mode         string // xhttp mode, or "multi" for gRPC multiMode
+	ServiceName  string // gRPC
+	Authority    string // gRPC
+	Extra        string // xhttp "extra" (raw JSON)
+	QuicSecurity string // QUIC header encryption
+	Key          string // QUIC key
 
 	Security             string // "", "none", "tls" or "reality"
 	SNI                  string
@@ -116,7 +118,13 @@ func (t *transportSpec) streamConfig(outbound bool) (*conf.StreamConfig, error) 
 			HealthCheckTimeout: 20,
 			InitialWindowsSize: 65536,
 		}
-	case "h2", "http", "h3", "quic":
+	case "quic":
+		// QUIC is kept by the GFW-knocker core.
+		s.QUICSettings = &conf.QUICConfig{Security: t.QuicSecurity, Key: t.Key}
+		if t.HeaderType != "" {
+			s.QUICSettings.Header = json.RawMessage(fmt.Sprintf(`{"type":%q}`, t.HeaderType))
+		}
+	case "h2", "http", "h3":
 		return nil, fmt.Errorf("transport %q was removed from xray-core; use the sing-box or automatic core for this link", netName)
 	default:
 		return nil, fmt.Errorf("unsupported transport %q", t.Network)
@@ -174,16 +182,13 @@ func (t *transportSpec) fingerprint() string {
 }
 
 // applyOutboundSecurity adds the TLS or REALITY client settings.
-//
-// xray-core removed "allowInsecure" (Build() hard-errors on it), and its
-// replacement "verifyPeerCertByName" still verifies the chain against the
-// system roots, so an insecure request cannot be honoured on this core:
-// self-signed servers need "pcs" (a certificate pin) or the sing-box core.
-// The automatic core routes such links to sing-box (see PrefersSingbox).
-func (t *transportSpec) applyOutboundSecurity(s *conf.StreamConfig) {
+// insecure skips certificate checks: upstream xray-core removed
+// "allowInsecure", the GFW-knocker core keeps it.
+func (t *transportSpec) applyOutboundSecurity(s *conf.StreamConfig, insecure bool) {
 	switch t.security() {
 	case "tls":
 		s.TLSSettings = &conf.TLSConfig{
+			AllowInsecure:        insecure,
 			Fingerprint:          t.fingerprint(),
 			ServerName:           t.serverName(),
 			PinnedPeerCertSha256: t.PinnedPeerCertSha256,
@@ -226,12 +231,12 @@ func (t *transportSpec) applyInboundSecurity(s *conf.StreamConfig, certFile, key
 }
 
 // outboundStream builds the full client stream settings.
-func (t *transportSpec) outboundStream() (*conf.StreamConfig, error) {
+func (t *transportSpec) outboundStream(insecure bool) (*conf.StreamConfig, error) {
 	s, err := t.streamConfig(true)
 	if err != nil {
 		return nil, err
 	}
-	t.applyOutboundSecurity(s)
+	t.applyOutboundSecurity(s, insecure)
 	return s, nil
 }
 

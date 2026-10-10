@@ -180,3 +180,43 @@ func TestPinnedPeerCertSha256_EnforcedByXrayCore(t *testing.T) {
 		t.Fatalf("wrong pin: expected xray to reject the peer certificate")
 	}
 }
+
+// allowInsecure must skip certificate checks at runtime on the GFW-knocker
+// core: a self-signed server is reached with it and rejected without it.
+func TestAllowInsecureSkipsVerificationInXrayCore(t *testing.T) {
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	t.Cleanup(srv.Close)
+	addr := strings.TrimPrefix(srv.URL, "https://")
+
+	get := func(t *testing.T, insecure string) (int, error) {
+		t.Helper()
+		x := NewXrayService(false, false)
+		p, err := x.CreateProtocol(fmt.Sprintf("trojan://password@%s?security=tls&type=tcp&sni=example.com&fp=chrome&allowInsecure=%s", addr, insecure))
+		if err != nil {
+			t.Fatalf("CreateProtocol: %v", err)
+		}
+		if err := p.Parse(); err != nil {
+			t.Fatalf("Parse: %v", err)
+		}
+		client, instance, err := x.MakeHttpClient(context.Background(), p, 5*time.Second)
+		if err != nil {
+			t.Fatalf("MakeHttpClient: %v", err)
+		}
+		defer instance.Close()
+		resp, err := client.Get("http://example.com/")
+		if err != nil {
+			return 0, err
+		}
+		defer resp.Body.Close()
+		return resp.StatusCode, nil
+	}
+
+	if code, err := get(t, "1"); err != nil || code != http.StatusBadRequest {
+		t.Fatalf("allowInsecure=1: got %d, %v; want 400 from the stand-in server", code, err)
+	}
+	if _, err := get(t, "0"); err == nil {
+		t.Fatalf("allowInsecure=0: expected the self-signed cert to be rejected")
+	}
+}

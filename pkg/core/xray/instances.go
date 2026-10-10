@@ -9,16 +9,16 @@ import (
 	"sync/atomic"
 	"weak"
 
-	"github.com/xtls/xray-core/common"
-	xnet "github.com/xtls/xray-core/common/net"
-	"github.com/xtls/xray-core/common/net/cnc"
-	"github.com/xtls/xray-core/common/session"
-	"github.com/xtls/xray-core/core"
-	"github.com/xtls/xray-core/features/outbound"
-	"github.com/xtls/xray-core/infra/conf"
-	"github.com/xtls/xray-core/transport"
-	"github.com/xtls/xray-core/transport/internet"
-	"github.com/xtls/xray-core/transport/pipe"
+	"github.com/GFW-knocker/Xray-core/common"
+	xnet "github.com/GFW-knocker/Xray-core/common/net"
+	"github.com/GFW-knocker/Xray-core/common/net/cnc"
+	"github.com/GFW-knocker/Xray-core/common/session"
+	"github.com/GFW-knocker/Xray-core/core"
+	"github.com/GFW-knocker/Xray-core/features/outbound"
+	"github.com/GFW-knocker/Xray-core/infra/conf"
+	"github.com/GFW-knocker/Xray-core/transport"
+	"github.com/GFW-knocker/Xray-core/transport/internet"
+	"github.com/GFW-knocker/Xray-core/transport/pipe"
 )
 
 // Several xray instances live in one process (a proxy listener next to
@@ -168,7 +168,7 @@ func chainThrough(ob *conf.OutboundDetourConfig, prev string) {
 func tagPrefix(id uint64) string { return "xk" + strconv.FormatUint(id, 10) + "-" }
 
 // renameTags gives every tagged outbound in obs the instance prefix and
-// rewrites the references between them (chain markers, proxy settings).
+// rewrites the references between them (chain markers).
 func renameTags(prefix string, obs []*conf.OutboundDetourConfig) {
 	rename := map[string]string{}
 	for _, ob := range obs {
@@ -179,11 +179,6 @@ func renameTags(prefix string, obs []*conf.OutboundDetourConfig) {
 	for _, ob := range obs {
 		if nt, ok := rename[ob.Tag]; ok {
 			ob.Tag = nt
-		}
-		if ob.ProxySettings != nil {
-			if nt, ok := rename[ob.ProxySettings.Tag]; ok {
-				ob.ProxySettings.Tag = nt
-			}
 		}
 		if ob.StreamSetting != nil && ob.StreamSetting.SocketSettings != nil {
 			so := ob.StreamSetting.SocketSettings

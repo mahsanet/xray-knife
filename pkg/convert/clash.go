@@ -135,6 +135,9 @@ func clashProxy(p protocol.Protocol, name string) (ordered, error) {
 
 	switch v := p.(type) {
 	case *xray.Vless:
+		if v.MVless {
+			return nil, fmt.Errorf("%s has no Clash equivalent", g.Protocol)
+		}
 		base("vless", v.Address)
 		m.add("uuid", v.ID)
 		m.add("udp", true)

@@ -8,6 +8,7 @@ import (
 const (
 	VmessIdentifier       = "vmess"
 	VlessIdentifier       = "vless"
+	MVlessIdentifier      = "mvless"
 	TrojanIdentifier      = "trojan"
 	ShadowsocksIdentifier = "ss"
 	WireguardIdentifier   = "wireguard"

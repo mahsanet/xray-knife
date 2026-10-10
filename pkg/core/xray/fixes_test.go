@@ -7,10 +7,9 @@ import (
 	"testing"
 )
 
-// TestBuild_TLSInsecureDoesNotError proves B1 is fixed: a TLS config with
-// insecure requested must build (xray-core removed "allowInsecure" and now
-// hard-errors on it after 2026-06-01). xray can't skip verification, so
-// insecure alone sets nothing; "vcn" from the link is passed through.
+// TestBuild_TLSInsecureDoesNotError: a TLS config with insecure requested
+// must build and set allowInsecure (kept by the GFW-knocker core); "vcn"
+// from the link is passed through.
 func TestBuild_TLSInsecureDoesNotError(t *testing.T) {
 	cases := []struct {
 		name    string
@@ -39,8 +38,8 @@ func TestBuild_TLSInsecureDoesNotError(t *testing.T) {
 			if ob.StreamSetting.TLSSettings == nil {
 				t.Fatalf("expected TLSSettings")
 			}
-			if ob.StreamSetting.TLSSettings.AllowInsecure {
-				t.Errorf("AllowInsecure must not be set (removed by xray-core)")
+			if !ob.StreamSetting.TLSSettings.AllowInsecure {
+				t.Errorf("AllowInsecure must be set")
 			}
 			if got := ob.StreamSetting.TLSSettings.VerifyPeerCertByName; got != tc.wantVCN {
 				t.Errorf("VerifyPeerCertByName = %q, want %q", got, tc.wantVCN)
@@ -70,6 +69,62 @@ func TestBuild_KCPDoesNotError(t *testing.T) {
 	}
 	if _, err := ob.Build(); err != nil {
 		t.Fatalf("ob.Build() failed (B2 regression): %v", err)
+	}
+}
+
+// mvless is the GFW-knocker core's VLESS variant: it must build there and
+// keep its own scheme.
+func TestBuild_MVless(t *testing.T) {
+	link := "mvless://a1a1a1a1-b2b2-c3c3-d4d4-e5e5e5e5e5e5@1.2.3.4:443?encryption=none&security=tls&sni=a.com&type=xhttp&allowInsecure=1"
+	p, err := (&Core{}).CreateProtocol(link)
+	if err != nil {
+		t.Fatal(err)
+	}
+	xp := p.(Protocol)
+	if err := xp.Parse(); err != nil {
+		t.Fatal(err)
+	}
+	ob, err := xp.BuildOutboundDetourConfig(false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ob.Protocol != "mvless" || !ob.StreamSetting.TLSSettings.AllowInsecure {
+		t.Fatalf("protocol %q, allowInsecure %v", ob.Protocol, ob.StreamSetting.TLSSettings.AllowInsecure)
+	}
+	if _, err := ob.Build(); err != nil {
+		t.Fatalf("Build: %v", err)
+	}
+	v := *xp.(*Vless)
+	v.OrigLink = ""
+	if got := v.GetLink(); !strings.HasPrefix(got, "mvless://") {
+		t.Fatalf("GetLink = %s", got)
+	}
+}
+
+// QUIC is kept by the GFW-knocker core, so it must build on xray.
+func TestBuild_QUIC(t *testing.T) {
+	for _, link := range []string{
+		"vless://a1a1a1a1-b2b2-c3c3-d4d4-e5e5e5e5e5e5@1.2.3.4:443?encryption=none&security=tls&sni=a.com&type=quic&quicSecurity=aes-128-gcm&key=k&headerType=wechat-video",
+		"trojan://pw@1.2.3.4:443?security=tls&sni=a.com&type=quic",
+	} {
+		p, err := (&Core{}).CreateProtocol(link)
+		if err != nil {
+			t.Fatal(err)
+		}
+		xp := p.(Protocol)
+		if err := xp.Parse(); err != nil {
+			t.Fatal(err)
+		}
+		ob, err := xp.BuildOutboundDetourConfig(false)
+		if err != nil {
+			t.Fatalf("%s: %v", link, err)
+		}
+		if ob.StreamSetting.QUICSettings == nil {
+			t.Fatalf("%s: no QUIC settings", link)
+		}
+		if _, err := ob.Build(); err != nil {
+			t.Fatalf("%s: Build: %v", link, err)
+		}
 	}
 }
 

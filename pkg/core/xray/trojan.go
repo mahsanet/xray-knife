@@ -10,7 +10,7 @@ import (
 	"github.com/lilendian0x00/xray-knife/v11/pkg/core/protocol"
 
 	"github.com/fatih/color"
-	"github.com/xtls/xray-core/infra/conf"
+	"github.com/GFW-knocker/Xray-core/infra/conf"
 )
 
 func NewTrojan(link string) Protocol {
@@ -63,6 +63,7 @@ func (t *Trojan) Parse() error {
 	t.HeaderType = query.Get("headerType")
 	t.ServiceName = query.Get("serviceName")
 	t.Mode = query.Get("mode")
+	t.Extra = query.Get("extra") // XHTTP extra
 	t.PublicKey = query.Get("pbk")
 	t.ShortIds = query.Get("sid")
 	t.SpiderX = query.Get("spx")
@@ -199,6 +200,7 @@ func (t *Trojan) GetLink() string {
 		addQueryParam("headerType", t.HeaderType)
 		addQueryParam("serviceName", t.ServiceName)
 		addQueryParam("mode", t.Mode)
+		addQueryParam("extra", t.Extra)
 		addQueryParam("pbk", t.PublicKey)
 		addQueryParam("sid", t.ShortIds)
 		addQueryParam("spx", t.SpiderX)
@@ -256,6 +258,9 @@ func (t *Trojan) transport() transportSpec {
 		Mode:                 t.Mode,
 		ServiceName:          t.ServiceName,
 		Authority:            t.Authority,
+		Extra:                t.Extra,
+		QuicSecurity:         t.QuicSecurity,
+		Key:                  t.Key,
 		Security:             t.Security,
 		SNI:                  t.SNI,
 		ALPN:                 t.ALPN,
@@ -275,7 +280,7 @@ func (t *Trojan) wantsInsecure() bool { return truthy(t.AllowInsecure) }
 
 func (t *Trojan) BuildOutboundDetourConfig(allowInsecure bool) (*conf.OutboundDetourConfig, error) {
 	ts := t.transport()
-	s, err := ts.outboundStream()
+	s, err := ts.outboundStream(allowInsecure || t.wantsInsecure())
 	if err != nil {
 		return nil, err
 	}

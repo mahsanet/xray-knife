@@ -357,6 +357,7 @@ type paramAlias struct {
 // url.Values lookups are).
 var paramAliases = map[string][]paramAlias{
 	"vless":  {{target: "allowInsecure", names: []string{"insecure", "allow_insecure"}}},
+	"mvless": {{target: "allowInsecure", names: []string{"insecure", "allow_insecure"}}},
 	"trojan": {{target: "allowInsecure", names: []string{"insecure", "allow_insecure"}}},
 	"tuic": {
 		{target: "congestion_control", names: []string{"congestion-control", "cc"}},
@@ -487,7 +488,7 @@ func dropDefaultParams(scheme string, q url.Values) {
 		}
 	}
 	switch scheme {
-	case "vless":
+	case "vless", "mvless":
 		drop("encryption", "none")
 		drop("security", "none")
 	case "trojan":

@@ -10,7 +10,7 @@ import (
 	"github.com/lilendian0x00/xray-knife/v11/pkg/core/protocol"
 
 	"github.com/fatih/color"
-	"github.com/xtls/xray-core/infra/conf"
+	"github.com/GFW-knocker/Xray-core/infra/conf"
 )
 
 func NewHysteria2(link string) Protocol {
@@ -185,8 +185,6 @@ func (h *Hysteria2) BuildOutboundDetourConfig(allowInsecure bool) (*conf.Outboun
 
 	// The auth string lives in the transport's hysteriaSettings; TLS/SNI is
 	// read from the stream security settings (tls.ConfigFromStreamSettings).
-	// Certificate checks can only be relaxed by pinning (pinSHA256): see
-	// transportSpec.applyOutboundSecurity.
 	network := conf.TransportProtocol("hysteria")
 	s := &conf.StreamConfig{
 		Network:  &network,
@@ -196,6 +194,7 @@ func (h *Hysteria2) BuildOutboundDetourConfig(allowInsecure bool) (*conf.Outboun
 			Auth:    h.Password,
 		},
 		TLSSettings: &conf.TLSConfig{
+			AllowInsecure:        allowInsecure || h.wantsInsecure(),
 			ServerName:           h.SNI,
 			PinnedPeerCertSha256: h.PinSHA256,
 		},

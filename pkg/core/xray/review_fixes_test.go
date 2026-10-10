@@ -12,8 +12,8 @@ import (
 
 	"github.com/lilendian0x00/xray-knife/v11/pkg/core/protocol"
 
-	"github.com/xtls/xray-core/app/proxyman"
-	"github.com/xtls/xray-core/features/outbound"
+	"github.com/GFW-knocker/Xray-core/app/proxyman"
+	"github.com/GFW-knocker/Xray-core/features/outbound"
 )
 
 // A chained xhttp hop with extra.downloadSettings opens its download
@@ -121,15 +121,15 @@ func TestBindInterfaceChecks(t *testing.T) {
 func TestSingboxReasonKeepsXrayOnlyFeatures(t *testing.T) {
 	const id = "00000000-0000-0000-0000-000000000000"
 	cases := map[string]bool{
-		"vless://" + id + "@1.2.3.4:443?security=tls&type=raw&insecure=1":                                                 true, // raw is tcp; "insecure" alias
+		"vless://" + id + "@1.2.3.4:443?security=tls&type=raw&insecure=1":                                                 false, // insecure stays on xray
 		"vless://" + id + "@1.2.3.4:443?security=tls&type=ws&allowInsecure=1&ech=AEX%2B":                                  false,
 		"vless://" + id + "@1.2.3.4:443?security=tls&type=ws&allowInsecure=1&encryption=mlkem768x25519plus.native.0rtt.x": false,
-		"trojan://pw@1.2.3.4:443?type=tcp&allow_insecure=1":                                                               true,
+		"trojan://pw@1.2.3.4:443?type=tcp&allow_insecure=1":                                                               false,
 		"ss://none:pw@1.2.3.4:8388":  true,
 		"ss://plain:pw@1.2.3.4:8388": true,
 	}
 	for link, want := range cases {
-		if got := SingboxReason(parseLink(t, link), false) != ""; got != want {
+		if got := SingboxReason(parseLink(t, link)) != ""; got != want {
 			t.Errorf("%s: moves to sing-box = %v, want %v", link, got, want)
 		}
 	}

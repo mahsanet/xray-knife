@@ -8,8 +8,8 @@ import (
 
 	"github.com/lilendian0x00/xray-knife/v11/pkg/core/protocol"
 
-	"github.com/xtls/xray-core/core"
-	"github.com/xtls/xray-core/infra/conf"
+	"github.com/GFW-knocker/Xray-core/core"
+	"github.com/GFW-knocker/Xray-core/infra/conf"
 )
 
 func chainTag(i int) string { return fmt.Sprintf("chain-%d", i) }
@@ -33,7 +33,6 @@ func (c *Core) MakeChainedInstance(ctx context.Context, hops []protocol.Protocol
 		if err != nil {
 			return nil, fmt.Errorf("chain hop %d: %w", i, err)
 		}
-		c.warnInsecure(out)
 		ob, err := out.BuildOutboundDetourConfig(c.AllowInsecure)
 		if err != nil {
 			return nil, fmt.Errorf("chain hop %d: failed to build outbound config: %w", i, err)

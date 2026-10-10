@@ -10,12 +10,12 @@ import (
 
 	"github.com/lilendian0x00/xray-knife/v11/pkg/core/protocol"
 
-	"github.com/xtls/xray-core/common"
-	"github.com/xtls/xray-core/common/serial"
-	"github.com/xtls/xray-core/core"
-	"github.com/xtls/xray-core/features/outbound"
-	"github.com/xtls/xray-core/infra/conf"
-	"github.com/xtls/xray-core/transport"
+	"github.com/GFW-knocker/Xray-core/common"
+	"github.com/GFW-knocker/Xray-core/common/serial"
+	"github.com/GFW-knocker/Xray-core/core"
+	"github.com/GFW-knocker/Xray-core/features/outbound"
+	"github.com/GFW-knocker/Xray-core/infra/conf"
+	"github.com/GFW-knocker/Xray-core/transport"
 )
 
 // switchTag is the default outbound of a swappable instance. It owns no
@@ -298,7 +298,6 @@ func (c *Core) swapOutbounds(hops []protocol.Protocol, gen int) ([]*conf.Outboun
 		if err != nil {
 			return nil, fmt.Errorf("hop %d: %w", i, err)
 		}
-		c.warnInsecure(out)
 		ob, err := out.BuildOutboundDetourConfig(c.AllowInsecure)
 		if err != nil {
 			return nil, fmt.Errorf("hop %d: %w", i, err)

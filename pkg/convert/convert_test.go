@@ -42,7 +42,7 @@ import (
 	"github.com/sagernet/sing-box/protocol/wireguard"
 	sjson "github.com/sagernet/sing/common/json"
 	"github.com/sagernet/sing/service"
-	"github.com/xtls/xray-core/infra/conf"
+	"github.com/GFW-knocker/Xray-core/infra/conf"
 	"gopkg.in/yaml.v3"
 )
 
