@@ -384,7 +384,7 @@ func (v *Vmess) BuildOutboundDetourConfig(allowInsecure bool) (*conf.OutboundDet
 		} else {
 			s.TLSSettings.ServerName = v.Host
 		}
-		s.TLSSettings.AllowInsecure = insecureFlag
+		s.TLSSettings.AllowInsecure = insecureFlag // see vless.go
 		if v.ALPN != "" {
 			alpns := conf.StringList(strings.Split(v.ALPN, ","))
 			s.TLSSettings.ALPN = &alpns

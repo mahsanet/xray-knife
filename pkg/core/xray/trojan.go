@@ -1,6 +1,7 @@
 package xray
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -337,7 +338,7 @@ func (t *Trojan) BuildOutboundDetourConfig(allowInsecure bool) (*conf.OutboundDe
 		t.Flow = ""
 	case "quic":
 		s.QUICSettings = &conf.QUICConfig{
-			Header:   json.RawMessage(fmt.Sprintf(`{ "type": "%s" }`, t.HeaderType)),
+			Header:   json.RawMessage(fmt.Sprintf(`{ "type": "%s" }`, cmp.Or(t.HeaderType, "none"))),
 			Security: t.QuicSecurity,
 			Key:      t.Key,
 		}
@@ -375,7 +376,7 @@ func (t *Trojan) BuildOutboundDetourConfig(allowInsecure bool) (*conf.OutboundDe
 		} else {
 			s.TLSSettings.ServerName = t.Host
 		}
-		s.TLSSettings.AllowInsecure = insecure
+		s.TLSSettings.AllowInsecure = insecure // see vless.go
 		if t.ALPN != "" {
 			alpns := conf.StringList(strings.Split(t.ALPN, ","))
 			s.TLSSettings.ALPN = &alpns

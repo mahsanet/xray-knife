@@ -1,6 +1,7 @@
 package xray
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -400,7 +401,7 @@ func (v *Vless) BuildOutboundDetourConfig(allowInsecure bool) (*conf.OutboundDet
 		v.Flow = ""
 	case "quic":
 		s.QUICSettings = &conf.QUICConfig{
-			Header:   json.RawMessage(fmt.Sprintf(`{ "type": "%s" }`, v.HeaderType)),
+			Header:   json.RawMessage(fmt.Sprintf(`{ "type": "%s" }`, cmp.Or(v.HeaderType, "none"))),
 			Security: v.QuicSecurity,
 			Key:      v.Key,
 		}
@@ -424,6 +425,8 @@ func (v *Vless) BuildOutboundDetourConfig(allowInsecure bool) (*conf.OutboundDet
 		} else {
 			s.TLSSettings.ServerName = v.Host // Fallback to Host if SNI is empty
 		}
+		// Must be allowInsecure, not verifyPeerCertByName: the latter still
+		// validates the chain against root CAs, so self-signed certs fail.
 		s.TLSSettings.AllowInsecure = insecureFlag
 		if v.ALPN != "" {
 			alpns := conf.StringList(strings.Split(v.ALPN, ","))

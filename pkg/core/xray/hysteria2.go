@@ -176,9 +176,9 @@ func (h *Hysteria2) BuildOutboundDetourConfig(allowInsecure bool) (*conf.Outboun
 	}
 
 	s.TLSSettings = &conf.TLSConfig{
-		ServerName:    h.SNI,
-		AllowInsecure: insecure,
+		ServerName: h.SNI,
 	}
+	s.TLSSettings.AllowInsecure = insecure // see vless.go
 
 	out.StreamSetting = s
 	return out, nil
