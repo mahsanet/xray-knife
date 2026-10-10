@@ -1,7 +1,6 @@
 package xray
 
 import (
-	"cmp"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -401,7 +400,7 @@ func (v *Vless) BuildOutboundDetourConfig(allowInsecure bool) (*conf.OutboundDet
 		v.Flow = ""
 	case "quic":
 		s.QUICSettings = &conf.QUICConfig{
-			Header:   json.RawMessage(fmt.Sprintf(`{ "type": "%s" }`, cmp.Or(v.HeaderType, "none"))),
+			Header:   json.RawMessage(fmt.Sprintf(`{ "type": "%s" }`, v.HeaderType)),
 			Security: v.QuicSecurity,
 			Key:      v.Key,
 		}

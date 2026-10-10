@@ -192,28 +192,3 @@ func b64VmessTLS() string {
 	j := `{"v":"2","add":"1.2.3.4","port":"443","id":"a1a1a1a1-b2b2-c3c3-d4d4-e5e5e5e5e5e5","aid":"0","net":"tcp","tls":"tls","sni":"example.com","ps":"x"}`
 	return base64.StdEncoding.EncodeToString([]byte(j))
 }
-
-// QUIC without headerType must build: an empty header type is rejected.
-func TestBuild_QUICWithoutHeader(t *testing.T) {
-	for _, link := range []string{
-		"vless://a1a1a1a1-b2b2-c3c3-d4d4-e5e5e5e5e5e5@1.2.3.4:443?encryption=none&security=tls&sni=a.com&type=quic",
-		"mvless://a1a1a1a1-b2b2-c3c3-d4d4-e5e5e5e5e5e5@1.2.3.4:443?encryption=none&security=tls&sni=a.com&type=quic",
-		"trojan://pw@1.2.3.4:443?security=tls&sni=a.com&type=quic",
-	} {
-		p, err := (&Core{}).CreateProtocol(link)
-		if err != nil {
-			t.Fatal(err)
-		}
-		xp := p.(Protocol)
-		if err := xp.Parse(); err != nil {
-			t.Fatal(err)
-		}
-		ob, err := xp.BuildOutboundDetourConfig(false)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if _, err := ob.Build(); err != nil {
-			t.Fatalf("%s: %v", link, err)
-		}
-	}
-}

@@ -30,7 +30,7 @@ func (c *Core) CreateProtocol(configLink string) (protocol.Protocol, error) {
 	case protocol.SocksIdentifier:
 		return NewSocks(configLink), nil
 	case protocol.WireguardIdentifier:
-		return nil, errors.New("wireguard is not supported on the sing-box core, use xray")
+		return NewWireguard(configLink), nil
 	case protocol.Hysteria2Identifier:
 		return NewHysteria2(configLink), nil
 	case "hy2":

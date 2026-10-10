@@ -10,13 +10,11 @@ import (
 	"github.com/lilendian0x00/xray-knife/v10/pkg/core/protocol"
 
 	box "github.com/sagernet/sing-box"
-	"github.com/sagernet/sing-box/adapter/certificate"
 	"github.com/sagernet/sing-box/adapter/endpoint"
 	"github.com/sagernet/sing-box/adapter/inbound"
 	boxOutbound "github.com/sagernet/sing-box/adapter/outbound"
 	boxService "github.com/sagernet/sing-box/adapter/service"
 	"github.com/sagernet/sing-box/dns"
-	"github.com/sagernet/sing-box/dns/transport/local"
 	"github.com/sagernet/sing-box/log"
 	"github.com/sagernet/sing-box/option"
 	"github.com/sagernet/sing-box/protocol/hysteria2"
@@ -25,6 +23,7 @@ import (
 	"github.com/sagernet/sing-box/protocol/trojan"
 	"github.com/sagernet/sing-box/protocol/vless"
 	"github.com/sagernet/sing-box/protocol/vmess"
+	"github.com/sagernet/sing-box/protocol/wireguard"
 	"github.com/sagernet/sing/common/logger"
 	M "github.com/sagernet/sing/common/metadata"
 	"github.com/sagernet/sing/service"
@@ -213,11 +212,9 @@ func (c *Core) MakeHttpClient(ctx context.Context, outbound protocol.Protocol, m
 	trojan.RegisterOutbound(outboundRegistry)
 	vless.RegisterOutbound(outboundRegistry)
 	vmess.RegisterOutbound(outboundRegistry)
+	wireguard.RegisterOutbound(outboundRegistry)
 
-	// sing-box 1.14 falls back to a "local" DNS server and fails box.New if it isn't registered.
-	dnsRegistry := dns.NewTransportRegistry()
-	local.RegisterTransport(dnsRegistry)
-	ctx = box.Context(ctx, inbound.NewRegistry(), outboundRegistry, endpoint.NewRegistry(), dnsRegistry, boxService.NewRegistry(), certificate.NewRegistry())
+	ctx = box.Context(ctx, inbound.NewRegistry(), outboundRegistry, endpoint.NewRegistry(), dns.NewTransportRegistry(), boxService.NewRegistry())
 
 	instance, err := box.New(box.Options{
 		Options: opts,
@@ -244,6 +241,20 @@ func (c *Core) MakeHttpClient(ctx context.Context, outbound protocol.Protocol, m
 
 	dialFunc := func(ctx context.Context, network, addr string) (net.Conn, error) {
 		return outboundAdapter.DialContext(ctx, network, M.ParseSocksaddr(addr))
+	}
+
+	if out.Name() == protocol.WireguardIdentifier {
+		dialFunc = func(ctx context.Context, network, addr string) (net.Conn, error) {
+			host, port, err := net.SplitHostPort(addr)
+			if err != nil {
+				return nil, err
+			}
+			ips, lookupErr := net.LookupIP(host)
+			if lookupErr != nil {
+				return nil, lookupErr
+			}
+			return outboundAdapter.DialContext(ctx, network, M.ParseSocksaddr(ips[0].To4().String()+":"+port))
+		}
 	}
 
 	tr := &http.Transport{

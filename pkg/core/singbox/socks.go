@@ -157,6 +157,9 @@ func (s *Socks) CraftInboundOptions() *option.Inbound {
 			UDPTimeout:                  0,
 			ProxyProtocol:               false,
 			ProxyProtocolAcceptNoHeader: false,
+			InboundOptions: option.InboundOptions{
+				Detour: "",
+			},
 		},
 		Users: nil,
 	}

@@ -112,6 +112,18 @@ type Trojan struct {
 	OrigLink string `json:"-"` // Original link
 }
 
+type Wireguard struct {
+	Remark       string
+	PublicKey    string `json:"publickey"`
+	SecretKey    string `json:"secretkey"`
+	Endpoint     string
+	Reserved     string `json:"reserved"`
+	LocalAddress string `json:"address"` // Local address IPv4/IPv6 seperated by commas
+	Mtu          int32  `json:"mtu"`
+
+	OrigLink string `json:"-"` // Original link
+}
+
 type Socks struct {
 	Remark   string
 	Address  string // HOST:PORT

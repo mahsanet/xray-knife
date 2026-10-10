@@ -1,7 +1,6 @@
 package xray
 
 import (
-	"cmp"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -338,7 +337,7 @@ func (t *Trojan) BuildOutboundDetourConfig(allowInsecure bool) (*conf.OutboundDe
 		t.Flow = ""
 	case "quic":
 		s.QUICSettings = &conf.QUICConfig{
-			Header:   json.RawMessage(fmt.Sprintf(`{ "type": "%s" }`, cmp.Or(t.HeaderType, "none"))),
+			Header:   json.RawMessage(fmt.Sprintf(`{ "type": "%s" }`, t.HeaderType)),
 			Security: t.QuicSecurity,
 			Key:      t.Key,
 		}
