@@ -77,7 +77,7 @@ func TestMVlessLinkRoundTrip(t *testing.T) {
 // VLESS.
 func TestMVlessStaysOnXray(t *testing.T) {
 	for _, q := range []string{"security=tls&type=ws&sni=a.com", "security=tls&type=h2&sni=a.com"} {
-		if r := SingboxReason(parseLink(t, "mvless://"+mvlessID+"@1.2.3.4:443?"+q), true); r != "" {
+		if r := SingboxReason(parseLink(t, "mvless://"+mvlessID+"@1.2.3.4:443?"+q)); r != "" {
 			t.Errorf("mvless %s moves to sing-box: %s", q, r)
 		}
 	}

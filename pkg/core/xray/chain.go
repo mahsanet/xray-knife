@@ -33,7 +33,6 @@ func (c *Core) MakeChainedInstance(ctx context.Context, hops []protocol.Protocol
 		if err != nil {
 			return nil, fmt.Errorf("chain hop %d: %w", i, err)
 		}
-		c.warnInsecure(out)
 		ob, err := out.BuildOutboundDetourConfig(c.AllowInsecure)
 		if err != nil {
 			return nil, fmt.Errorf("chain hop %d: failed to build outbound config: %w", i, err)

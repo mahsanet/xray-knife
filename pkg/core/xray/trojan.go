@@ -277,7 +277,7 @@ func (t *Trojan) wantsInsecure() bool { return truthy(t.AllowInsecure) }
 
 func (t *Trojan) BuildOutboundDetourConfig(allowInsecure bool) (*conf.OutboundDetourConfig, error) {
 	ts := t.transport()
-	s, err := ts.outboundStream()
+	s, err := ts.outboundStream(allowInsecure || t.wantsInsecure())
 	if err != nil {
 		return nil, err
 	}

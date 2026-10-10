@@ -17,8 +17,8 @@ func TestAutomaticCoreRoutesByCapability(t *testing.T) {
 		singbox  bool
 	}{
 		{"plain tls stays on xray", "vless://" + id + "@1.2.3.4:443?security=tls&sni=a.com&type=ws", false, false},
-		{"link insecure moves to sing-box", "vless://" + id + "@1.2.3.4:443?security=tls&sni=a.com&type=ws&allowInsecure=1", false, true},
-		{"global insecure moves to sing-box", "trojan://pass@1.2.3.4:443?sni=a.com", true, true},
+		{"link insecure stays on xray", "vless://" + id + "@1.2.3.4:443?security=tls&sni=a.com&type=ws&allowInsecure=1", false, false},
+		{"global insecure stays on xray", "trojan://pass@1.2.3.4:443?sni=a.com", true, false},
 		{"pinned cert stays on xray", "vless://" + id + "@1.2.3.4:443?security=tls&type=tcp&allowInsecure=1&pcs=" + strings.Repeat("ab", 32), false, false},
 		{"reality stays on xray", "vless://" + id + "@1.2.3.4:443?security=reality&pbk=k&sid=1&sni=a.com", true, false},
 		{"xhttp stays on xray", "vless://" + id + "@1.2.3.4:443?security=tls&type=xhttp&sni=a.com", true, false},

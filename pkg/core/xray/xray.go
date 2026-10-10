@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -53,29 +52,6 @@ func installLogHandler(verbose bool) {
 		commlog.RegisterHandler(&noOpHandler{})
 		logInstalled = true
 	}
-}
-
-var insecureWarning sync.Once
-
-// warnInsecure tells the user once per process that xray-core ignores an
-// insecure-TLS request (see transportSpec.applyOutboundSecurity).
-func (c *Core) warnInsecure(p Protocol) {
-	type insecureRequester interface{ wantsInsecure() bool }
-	r, ok := p.(insecureRequester)
-	if !ok || !(c.AllowInsecure || r.wantsInsecure()) {
-		return
-	}
-	if ts, ok := p.(interface{ transport() transportSpec }); ok {
-		spec := ts.transport()
-		if spec.security() != "tls" || spec.PinnedPeerCertSha256 != "" {
-			return
-		}
-	}
-	insecureWarning.Do(func() {
-		fmt.Fprintln(os.Stderr, "xray-knife: xray-core cannot skip TLS certificate verification; "+
-			"allowInsecure/--insecure has no effect on the xray core. Use the automatic or sing-box core, "+
-			"or pin the certificate with pcs=<sha256>.")
-	})
 }
 
 // noOpHandler discards all log messages.
@@ -412,7 +388,6 @@ func (c *Core) MakeInstance(ctx context.Context, outbound protocol.Protocol) (pr
 	if err != nil {
 		return nil, err
 	}
-	c.warnInsecure(out)
 	ob, err := out.BuildOutboundDetourConfig(c.AllowInsecure)
 	if err != nil {
 		return nil, err

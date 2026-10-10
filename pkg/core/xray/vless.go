@@ -311,7 +311,7 @@ func (v *Vless) wantsInsecure() bool { return truthy(v.AllowInsecure) }
 
 func (v *Vless) BuildOutboundDetourConfig(allowInsecure bool) (*conf.OutboundDetourConfig, error) {
 	ts := v.transport()
-	s, err := ts.outboundStream()
+	s, err := ts.outboundStream(allowInsecure || v.wantsInsecure())
 	if err != nil {
 		return nil, err
 	}

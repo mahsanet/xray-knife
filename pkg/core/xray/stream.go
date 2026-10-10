@@ -187,17 +187,16 @@ func (t *transportSpec) fingerprint() string {
 
 // applyOutboundSecurity adds the TLS or REALITY client settings.
 //
-// xray-core removed "allowInsecure" (Build() hard-errors on it), and its
-// replacement "verifyPeerCertByName" still verifies the chain against the
-// system roots, so an insecure request cannot be honoured on this core:
-// self-signed servers need "pcs" (a certificate pin) or the sing-box core.
-// The automatic core routes such links to sing-box (see PrefersSingbox).
-func (t *transportSpec) applyOutboundSecurity(s *conf.StreamConfig) {
+// Insecure TLS must use allowInsecure, not verifyPeerCertByName: the latter
+// still validates the chain against root CAs, so self-signed certs fail.
+// Upstream xray-core removed allowInsecure; the GFW-knocker core keeps it.
+func (t *transportSpec) applyOutboundSecurity(s *conf.StreamConfig, insecure bool) {
 	switch t.security() {
 	case "tls":
 		s.TLSSettings = &conf.TLSConfig{
 			Fingerprint:          t.fingerprint(),
 			ServerName:           t.serverName(),
+			AllowInsecure:        insecure,
 			PinnedPeerCertSha256: t.PinnedPeerCertSha256,
 			VerifyPeerCertByName: t.VerifyPeerCertByName,
 			ECHConfigList:        t.ECHConfigList,
@@ -237,13 +236,14 @@ func (t *transportSpec) applyInboundSecurity(s *conf.StreamConfig, certFile, key
 	s.Security = "none"
 }
 
-// outboundStream builds the full client stream settings.
-func (t *transportSpec) outboundStream() (*conf.StreamConfig, error) {
+// outboundStream builds the full client stream settings. insecure skips
+// TLS certificate verification.
+func (t *transportSpec) outboundStream(insecure bool) (*conf.StreamConfig, error) {
 	s, err := t.streamConfig(true)
 	if err != nil {
 		return nil, err
 	}
-	t.applyOutboundSecurity(s)
+	t.applyOutboundSecurity(s, insecure)
 	return s, nil
 }
 

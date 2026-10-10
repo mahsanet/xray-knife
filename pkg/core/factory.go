@@ -155,7 +155,7 @@ func (c *AutomaticCore) preferSingbox(link string) bool {
 		return false // let the xray parser report the problem
 	}
 	xp, ok := p.(xray.Protocol)
-	return ok && xray.SingboxReason(xp, c.insecure) != ""
+	return ok && xray.SingboxReason(xp) != ""
 }
 
 // CreateProtocol for AutomaticCore dispatches to the correct underlying core.
