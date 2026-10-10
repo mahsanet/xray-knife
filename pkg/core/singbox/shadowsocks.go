@@ -139,6 +139,9 @@ func (s *Shadowsocks) CraftOutboundOptions(allowInsecure bool) (*option.Outbound
 		Password: s.Password,
 		Method:   s.Encryption,
 	}
+	if opts.Method == "plain" {
+		opts.Method = "none" // same cipher, sing-box only knows "none"
+	}
 
 	return &option.Outbound{
 		Type:    "shadowsocks",
