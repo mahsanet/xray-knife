@@ -7,9 +7,9 @@ import (
 	"testing"
 )
 
-// TestBuild_TLSInsecureDoesNotError proves B1 is fixed: a TLS config with
-// insecure requested must build (xray-core removed "allowInsecure" and now
-// hard-errors on it after 2026-06-01).
+// TestBuild_TLSInsecureDoesNotError: a TLS config with insecure requested must
+// set allowInsecure (verifyPeerCertByName still checks the chain against root
+// CAs, so it rejects self-signed certs) and must build without error.
 func TestBuild_TLSInsecureDoesNotError(t *testing.T) {
 	cases := []struct {
 		name string
@@ -18,6 +18,7 @@ func TestBuild_TLSInsecureDoesNotError(t *testing.T) {
 		{"vless-tls", "vless://a1a1a1a1-b2b2-c3c3-d4d4-e5e5e5e5e5e5@1.2.3.4:443?encryption=none&security=tls&type=tcp&sni=example.com&allowInsecure=1"},
 		{"trojan-tls", "trojan://password@1.2.3.4:443?security=tls&type=tcp&sni=example.com&allowInsecure=1"},
 		{"vmess-tls", "vmess://" + b64VmessTLS()},
+		{"hysteria2-tls", "hysteria2://s3cret@1.2.3.4:443?sni=example.com&insecure=1"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -33,16 +34,14 @@ func TestBuild_TLSInsecureDoesNotError(t *testing.T) {
 			if err != nil {
 				t.Fatalf("BuildOutboundDetourConfig: %v", err)
 			}
-			// TLSSettings must NOT set AllowInsecure (removed) and SHOULD use
-			// verifyPeerCertByName instead.
 			if ob.StreamSetting.TLSSettings == nil {
 				t.Fatalf("expected TLSSettings")
 			}
-			if ob.StreamSetting.TLSSettings.AllowInsecure {
-				t.Errorf("AllowInsecure must not be set (removed by xray-core)")
+			if !ob.StreamSetting.TLSSettings.AllowInsecure {
+				t.Errorf("expected AllowInsecure to be set")
 			}
-			if ob.StreamSetting.TLSSettings.VerifyPeerCertByName == "" {
-				t.Errorf("expected VerifyPeerCertByName to emulate insecure")
+			if ob.StreamSetting.TLSSettings.VerifyPeerCertByName != "" {
+				t.Errorf("VerifyPeerCertByName must not be used to emulate insecure")
 			}
 			// The full build pipeline must succeed (this is what used to error).
 			if _, err := ob.Build(); err != nil {

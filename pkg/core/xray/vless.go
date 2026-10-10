@@ -424,13 +424,9 @@ func (v *Vless) BuildOutboundDetourConfig(allowInsecure bool) (*conf.OutboundDet
 		} else {
 			s.TLSSettings.ServerName = v.Host // Fallback to Host if SNI is empty
 		}
-		// xray-core removed "allowInsecure" (it hard-errors in Build() after
-		// 2026-06-01). "verifyPeerCertByName" is the sanctioned replacement:
-		// it skips CA/chain validation (so self-signed certs pass) while still
-		// requiring the cert to be valid for the given name.
-		if insecureFlag && s.TLSSettings.ServerName != "" {
-			s.TLSSettings.VerifyPeerCertByName = s.TLSSettings.ServerName
-		}
+		// Must be allowInsecure, not verifyPeerCertByName: the latter still
+		// validates the chain against root CAs, so self-signed certs fail.
+		s.TLSSettings.AllowInsecure = insecureFlag
 		if v.ALPN != "" {
 			alpns := conf.StringList(strings.Split(v.ALPN, ","))
 			s.TLSSettings.ALPN = &alpns

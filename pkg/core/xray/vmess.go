@@ -384,11 +384,7 @@ func (v *Vmess) BuildOutboundDetourConfig(allowInsecure bool) (*conf.OutboundDet
 		} else {
 			s.TLSSettings.ServerName = v.Host
 		}
-		// xray-core removed "allowInsecure"; emulate with verifyPeerCertByName
-		// (accepts self-signed certs valid for this name). See vless.go.
-		if insecureFlag && s.TLSSettings.ServerName != "" {
-			s.TLSSettings.VerifyPeerCertByName = s.TLSSettings.ServerName
-		}
+		s.TLSSettings.AllowInsecure = insecureFlag // see vless.go
 		if v.ALPN != "" {
 			alpns := conf.StringList(strings.Split(v.ALPN, ","))
 			s.TLSSettings.ALPN = &alpns

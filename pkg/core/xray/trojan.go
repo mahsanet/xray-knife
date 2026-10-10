@@ -371,11 +371,7 @@ func (t *Trojan) BuildOutboundDetourConfig(allowInsecure bool) (*conf.OutboundDe
 		} else {
 			s.TLSSettings.ServerName = t.Host
 		}
-		// xray-core removed "allowInsecure"; emulate with verifyPeerCertByName
-		// (accepts self-signed certs valid for this name). See vless.go.
-		if insecure && s.TLSSettings.ServerName != "" {
-			s.TLSSettings.VerifyPeerCertByName = s.TLSSettings.ServerName
-		}
+		s.TLSSettings.AllowInsecure = insecure // see vless.go
 		if t.ALPN != "" {
 			alpns := conf.StringList(strings.Split(t.ALPN, ","))
 			s.TLSSettings.ALPN = &alpns

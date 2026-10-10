@@ -178,11 +178,7 @@ func (h *Hysteria2) BuildOutboundDetourConfig(allowInsecure bool) (*conf.Outboun
 	s.TLSSettings = &conf.TLSConfig{
 		ServerName: h.SNI,
 	}
-	// xray-core removed "allowInsecure"; verifyPeerCertByName is the sanctioned
-	// replacement (accepts self-signed certs valid for this name).
-	if insecure && h.SNI != "" {
-		s.TLSSettings.VerifyPeerCertByName = h.SNI
-	}
+	s.TLSSettings.AllowInsecure = insecure // see vless.go
 
 	out.StreamSetting = s
 	return out, nil
