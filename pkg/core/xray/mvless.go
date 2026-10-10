@@ -327,13 +327,9 @@ func (v *MVless) BuildOutboundDetourConfig(allowInsecure bool) (*conf.OutboundDe
 			Path: v.Path,
 			Mode: v.Mode,
 		}
-		// decode the percent-encoded JSON from the URL
+		// already decoded by query.Get, a second unescape breaks '+' and '%'
 		if v.Extra != "" {
-			decoded, err := url.QueryUnescape(v.Extra)
-			if err != nil {
-				return nil, fmt.Errorf("invalid extra parameter: %w", err)
-			}
-			s.XHTTPSettings.Extra = json.RawMessage(decoded)
+			s.XHTTPSettings.Extra = json.RawMessage(v.Extra)
 		}
 
 		if v.Mode == "" {

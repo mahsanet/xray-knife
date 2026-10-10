@@ -69,6 +69,7 @@ func (t *Trojan) Parse() error {
 	t.HeaderType = query.Get("headerType")
 	t.ServiceName = query.Get("serviceName")
 	t.Mode = query.Get("mode")
+	t.Extra = query.Get("extra") // XHTTP extra
 	t.PublicKey = query.Get("pbk")
 	t.ShortIds = query.Get("sid")
 	t.SpiderX = query.Get("spx")
@@ -296,6 +297,9 @@ func (t *Trojan) BuildOutboundDetourConfig(allowInsecure bool) (*conf.OutboundDe
 			Path: t.Path,
 			Mode: t.Mode,
 		}
+		if t.Extra != "" {
+			s.XHTTPSettings.Extra = json.RawMessage(t.Extra)
+		}
 		//if v.Host != "" {
 		//	h := conf.StringList(strings.Split(v.Host, ","))
 		//	s.XHTTPSettings.Host = &h
@@ -371,11 +375,7 @@ func (t *Trojan) BuildOutboundDetourConfig(allowInsecure bool) (*conf.OutboundDe
 		} else {
 			s.TLSSettings.ServerName = t.Host
 		}
-		// xray-core removed "allowInsecure"; emulate with verifyPeerCertByName
-		// (accepts self-signed certs valid for this name). See vless.go.
-		if insecure && s.TLSSettings.ServerName != "" {
-			s.TLSSettings.VerifyPeerCertByName = s.TLSSettings.ServerName
-		}
+		s.TLSSettings.AllowInsecure = insecure
 		if t.ALPN != "" {
 			alpns := conf.StringList(strings.Split(t.ALPN, ","))
 			s.TLSSettings.ALPN = &alpns

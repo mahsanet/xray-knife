@@ -7,9 +7,8 @@ import (
 	"testing"
 )
 
-// TestBuild_TLSInsecureDoesNotError proves B1 is fixed: a TLS config with
-// insecure requested must build (xray-core removed "allowInsecure" and now
-// hard-errors on it after 2026-06-01).
+// TestBuild_TLSInsecureDoesNotError: a TLS config with insecure requested
+// must build and set allowInsecure (kept by the GFW-knocker core).
 func TestBuild_TLSInsecureDoesNotError(t *testing.T) {
 	cases := []struct {
 		name string
@@ -33,16 +32,11 @@ func TestBuild_TLSInsecureDoesNotError(t *testing.T) {
 			if err != nil {
 				t.Fatalf("BuildOutboundDetourConfig: %v", err)
 			}
-			// TLSSettings must NOT set AllowInsecure (removed) and SHOULD use
-			// verifyPeerCertByName instead.
 			if ob.StreamSetting.TLSSettings == nil {
 				t.Fatalf("expected TLSSettings")
 			}
-			if ob.StreamSetting.TLSSettings.AllowInsecure {
-				t.Errorf("AllowInsecure must not be set (removed by xray-core)")
-			}
-			if ob.StreamSetting.TLSSettings.VerifyPeerCertByName == "" {
-				t.Errorf("expected VerifyPeerCertByName to emulate insecure")
+			if !ob.StreamSetting.TLSSettings.AllowInsecure {
+				t.Errorf("AllowInsecure must be set")
 			}
 			// The full build pipeline must succeed (this is what used to error).
 			if _, err := ob.Build(); err != nil {

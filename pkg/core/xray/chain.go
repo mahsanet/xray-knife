@@ -21,7 +21,7 @@ import (
 // MakeChainedInstance builds an xray-core instance with multiple outbounds
 // chained together. Hop 0 is the entry point (receives inbound traffic),
 // hop N-1 is the exit (connects to the destination). Each intermediate hop
-// uses ProxySettings to dial through the next hop.
+// uses sockopt.dialerProxy to dial through the next hop.
 func (c *Core) MakeChainedInstance(ctx context.Context, hops []protocol.Protocol) (protocol.Instance, error) {
 	if len(hops) < 2 {
 		return nil, fmt.Errorf("chain requires at least 2 hops, got %d", len(hops))
@@ -50,12 +50,15 @@ func (c *Core) MakeChainedInstance(ctx context.Context, hops []protocol.Protocol
 
 		ob.Tag = fmt.Sprintf("chain-%d", i)
 
-		// For all hops except the last, set ProxySettings to route through
-		// the next hop in the chain.
+		// For all hops except the last, dial through the next hop in the chain.
 		if i < len(hops)-1 {
-			ob.ProxySettings = &conf.ProxyConfig{
-				Tag: fmt.Sprintf("chain-%d", i+1),
+			if ob.StreamSetting == nil {
+				ob.StreamSetting = &conf.StreamConfig{}
 			}
+			if ob.StreamSetting.SocketSettings == nil {
+				ob.StreamSetting.SocketSettings = &conf.SocketConfig{}
+			}
+			ob.StreamSetting.SocketSettings.DialerProxy = fmt.Sprintf("chain-%d", i+1)
 		}
 
 		built, err := ob.Build()

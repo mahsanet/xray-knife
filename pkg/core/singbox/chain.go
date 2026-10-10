@@ -10,11 +10,13 @@ import (
 	"github.com/lilendian0x00/xray-knife/v10/pkg/core/protocol"
 
 	box "github.com/sagernet/sing-box"
+	"github.com/sagernet/sing-box/adapter/certificate"
 	"github.com/sagernet/sing-box/adapter/endpoint"
 	"github.com/sagernet/sing-box/adapter/inbound"
 	boxOutbound "github.com/sagernet/sing-box/adapter/outbound"
 	boxService "github.com/sagernet/sing-box/adapter/service"
 	"github.com/sagernet/sing-box/dns"
+	"github.com/sagernet/sing-box/dns/transport/local"
 	"github.com/sagernet/sing-box/option"
 	"github.com/sagernet/sing-box/protocol/hysteria2"
 	"github.com/sagernet/sing-box/protocol/shadowsocks"
@@ -22,7 +24,6 @@ import (
 	"github.com/sagernet/sing-box/protocol/trojan"
 	"github.com/sagernet/sing-box/protocol/vless"
 	"github.com/sagernet/sing-box/protocol/vmess"
-	"github.com/sagernet/sing-box/protocol/wireguard"
 	M "github.com/sagernet/sing/common/metadata"
 	"github.com/sagernet/sing/service"
 )
@@ -40,8 +41,6 @@ func setDetour(outbound *option.Outbound, detourTag string) error {
 	case *option.ShadowsocksOutboundOptions:
 		o.Detour = detourTag
 	case *option.Hysteria2OutboundOptions:
-		o.Detour = detourTag
-	case *option.LegacyWireGuardOutboundOptions:
 		o.Detour = detourTag
 	case *option.SOCKSOutboundOptions:
 		o.Detour = detourTag
@@ -165,9 +164,11 @@ func (c *Core) MakeChainedHttpClient(ctx context.Context, hops []protocol.Protoc
 	trojan.RegisterOutbound(outboundRegistry)
 	vless.RegisterOutbound(outboundRegistry)
 	vmess.RegisterOutbound(outboundRegistry)
-	wireguard.RegisterOutbound(outboundRegistry)
 
-	ctx = box.Context(ctx, inbound.NewRegistry(), outboundRegistry, endpoint.NewRegistry(), dns.NewTransportRegistry(), boxService.NewRegistry())
+	// sing-box 1.14 falls back to a "local" DNS server and fails box.New if it isn't registered.
+	dnsRegistry := dns.NewTransportRegistry()
+	local.RegisterTransport(dnsRegistry)
+	ctx = box.Context(ctx, inbound.NewRegistry(), outboundRegistry, endpoint.NewRegistry(), dnsRegistry, boxService.NewRegistry(), certificate.NewRegistry())
 
 	instance, err := box.New(box.Options{
 		Options: opts,
