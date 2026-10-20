@@ -145,15 +145,15 @@ func TestSingboxReasonKeepsXrayOnlyFeatures(t *testing.T) {
 }
 
 func TestParserStrictness(t *testing.T) {
-	for _, link := range []string{
-		"vless://00000000-0000-0000-0000-000000000000@1.2.3.4:443?security=tls&sni=a.com:443",
-		"trojan://pw@1.2.3.4:443?sni=a.com,b.com",
-		"hy2://pw@1.2.3.4:443?sni=a.com:1",
-	} {
-		p, _ := (&Core{}).CreateProtocol(link)
-		if err := p.Parse(); err == nil {
-			t.Errorf("%s: SNI with a port or list accepted", link)
-		}
+	if p, _ := (&Core{}).CreateProtocol("hy2://pw@1.2.3.4:443?sni=a.com:1"); p.Parse() == nil {
+		t.Error("hy2 SNI with a port accepted")
+	}
+	// vless and trojan keep any SNI as given, the test decides
+	if v := parseLink(t, "vless://00000000-0000-0000-0000-000000000000@1.2.3.4:443?security=tls&sni=t.me/x").(*Vless); v.SNI != "t.me/x" {
+		t.Errorf("vless SNI = %q", v.SNI)
+	}
+	if tr := parseLink(t, "trojan://pw@1.2.3.4:443?sni=a.com,b.com").(*Trojan); tr.SNI != "a.com,b.com" {
+		t.Errorf("trojan SNI = %q", tr.SNI)
 	}
 	vm := &Vmess{Address: "1.2.3.4", Port: "443", ID: "id", Network: "tcp", TLS: "reality"}
 	if _, err := vm.BuildOutboundDetourConfig(false); err == nil {

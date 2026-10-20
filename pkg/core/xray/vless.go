@@ -59,13 +59,11 @@ func (v *Vless) Parse() error {
 	v.TlsFingerprint = query.Get("fp") // fingerprint
 	v.Type = query.Get("type")         // network type: "tcp", "ws", "grpc", "xhttp", etc.
 
+	// sni is kept as given: with insecure TLS even a junk one like "t.me/channel" can work, so the test decides
 	sni := strings.TrimSpace(query.Get("sni"))
-	if !validSNI(sni) {
-		return fmt.Errorf("invalid characters in 'sni' parameter: %q", sni)
-	}
 	host := strings.TrimSpace(query.Get("host"))
 	if !validHostList(host) {
-		return fmt.Errorf("invalid characters in 'host' parameter: %q", host)
+		host = "" // junk like "@channel" shows up in exports; drop it rather than reject the link
 	}
 
 	v.SNI = sni
