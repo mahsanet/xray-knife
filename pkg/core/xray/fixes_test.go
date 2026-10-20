@@ -188,6 +188,22 @@ func TestVmess_GrpcMultiModeDefault(t *testing.T) {
 	}
 }
 
+// TestVmess_QuicHeaderAndKey: quic takes the header from type, security from host and key from path.
+func TestVmess_QuicHeaderAndKey(t *testing.T) {
+	v := &Vmess{Network: "quic", Type: "utp", Host: "aes-128-gcm", Path: "pw", Port: "443", ID: "a1a1a1a1-b2b2-c3c3-d4d4-e5e5e5e5e5e5", Address: "1.2.3.4"}
+	ob, err := v.BuildOutboundDetourConfig(false)
+	if err != nil {
+		t.Fatalf("Build: %v", err)
+	}
+	q := ob.StreamSetting.QUICSettings
+	if q == nil {
+		t.Fatalf("expected QUICSettings")
+	}
+	if q.Security != "aes-128-gcm" || q.Key != "pw" || !strings.Contains(string(q.Header), "utp") {
+		t.Errorf("got security=%q key=%q header=%s", q.Security, q.Key, q.Header)
+	}
+}
+
 // b64VmessTLS returns a base64 vmess payload with tls enabled for the insecure test.
 func b64VmessTLS() string {
 	j := `{"v":"2","add":"1.2.3.4","port":"443","id":"a1a1a1a1-b2b2-c3c3-d4d4-e5e5e5e5e5e5","aid":"0","net":"tcp","tls":"tls","sni":"example.com","ps":"x"}`

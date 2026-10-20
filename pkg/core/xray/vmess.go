@@ -262,7 +262,8 @@ func (v *Vmess) ConvertToGeneralConfig() (g protocol.GeneralConfig) {
 
 // transport maps the VMess JSON fields onto the shared stream builders.
 // VMess overloads "type": the TCP header type, the xhttp mode or the gRPC
-// mode; for gRPC "path" is the service name and "host" the authority.
+// mode; for gRPC "path" is the service name and "host" the authority; for
+// quic "type" is the header, "host" the security and "path" the key.
 func (v *Vmess) transport() transportSpec {
 	ts := transportSpec{
 		Network:              v.Network,
@@ -285,6 +286,11 @@ func (v *Vmess) transport() transportSpec {
 		ts.Mode = v.Type
 		ts.ServiceName = v.Path
 		ts.Authority = v.Host
+	case "quic":
+		ts.HeaderType = v.Type
+		ts.QuicSecurity = v.Host
+		ts.QuicKey = v.Path
+		ts.Host = "" // not a hostname here, keep it out of the SNI fallback
 	}
 	return ts
 }
