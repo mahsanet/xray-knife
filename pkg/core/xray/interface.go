@@ -54,6 +54,7 @@ type Vmess struct {
 }
 
 type Vless struct {
+	mvless               bool   // mvless:// link, same as VLESS on the Mahsa core
 	LinkVersion          string `json:"-"`
 	ID                   string `json:"id"`  // UUID
 	Address              string `json:"add"` // HOST:PORT

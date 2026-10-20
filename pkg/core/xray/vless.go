@@ -17,12 +17,19 @@ func NewVless(link string) Protocol {
 	return &Vless{OrigLink: link}
 }
 
+func NewMVless(link string) Protocol {
+	return &Vless{OrigLink: link, mvless: true}
+}
+
 func (v *Vless) Name() string {
+	if v.mvless {
+		return protocol.MVlessIdentifier
+	}
 	return "vless"
 }
 
 func (v *Vless) Parse() error {
-	if !strings.HasPrefix(v.OrigLink, protocol.VlessIdentifier+"://") {
+	if !strings.HasPrefix(v.OrigLink, v.Name()+"://") {
 		return fmt.Errorf("vless unreconized: %s", v.OrigLink)
 	}
 
@@ -195,7 +202,7 @@ func (v *Vless) GetLink() string {
 		return v.OrigLink
 	} else {
 		baseURL := url.URL{
-			Scheme: "vless",
+			Scheme: v.Name(),
 			User:   url.User(v.ID),
 			Host:   net.JoinHostPort(v.Address, v.Port),
 		}

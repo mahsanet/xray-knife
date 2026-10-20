@@ -8,6 +8,7 @@ import (
 const (
 	VmessIdentifier       = "vmess"
 	VlessIdentifier       = "vless"
+	MVlessIdentifier      = "mvless" // Mahsa core
 	TrojanIdentifier      = "trojan"
 	ShadowsocksIdentifier = "ss"
 	WireguardIdentifier   = "wireguard"

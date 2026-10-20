@@ -29,6 +29,7 @@ func TestAutomaticCoreRoutesByCapability(t *testing.T) {
 		{"aead ss", "ss://aes-128-gcm:pass@1.2.3.4:8388", false, false},
 		{"upper-case scheme", "VLESS://" + id + "@10.0.0.1:443?security=none", false, false},
 		{"plaintext to a public server stays on xray", "vless://" + id + "@1.2.3.4:80?security=none&type=ws", false, false},
+		{"mvless stays on xray", "mvless://" + id + "@1.2.3.4:443?security=tls&type=xhttp&sni=a.com", false, false},
 		{"quic stays on xray", "vless://" + id + "@1.2.3.4:443?security=tls&type=quic&sni=a.com", false, false},
 	}
 	for _, tc := range cases {
