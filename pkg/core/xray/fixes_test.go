@@ -231,6 +231,19 @@ func TestVmess_JunkHostDropped(t *testing.T) {
 	}
 }
 
+// TestEchPlusKept: a raw '+' in ech must not turn into a space.
+func TestEchPlusKept(t *testing.T) {
+	const ech = "cloudflare-ech.com+https://1.1.1.1/dns-query"
+	v := &Vless{OrigLink: "vless://a1a1a1a1-b2b2-c3c3-d4d4-e5e5e5e5e5e5@1.2.3.4:443?security=tls&type=ws&sni=a.com&ech=" + ech}
+	tr := &Trojan{OrigLink: "trojan://pw@1.2.3.4:443?security=tls&type=ws&sni=a.com&ech=" + ech}
+	if err := v.Parse(); err != nil || v.ECHConfigList != ech {
+		t.Errorf("vless ech = %q, err %v", v.ECHConfigList, err)
+	}
+	if err := tr.Parse(); err != nil || tr.ECHConfigList != ech {
+		t.Errorf("trojan ech = %q, err %v", tr.ECHConfigList, err)
+	}
+}
+
 // b64VmessTLS returns a base64 vmess payload with tls enabled for the insecure test.
 func b64VmessTLS() string {
 	j := `{"v":"2","add":"1.2.3.4","port":"443","id":"a1a1a1a1-b2b2-c3c3-d4d4-e5e5e5e5e5e5","aid":"0","net":"tcp","tls":"tls","sni":"example.com","ps":"x"}`
