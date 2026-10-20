@@ -26,7 +26,12 @@ type transportSpec struct {
 	Authority   string // gRPC
 	Extra       string // xhttp "extra" (raw JSON)
 
+	// quic, kept by the Mahsa core
+	QuicSecurity string
+	QuicKey      string
+
 	Security             string // "", "none", "tls" or "reality"
+	Insecure             bool   // skip cert checks (allowInsecure, kept by the Mahsa core)
 	SNI                  string
 	ALPN                 string
 	Fingerprint          string
@@ -116,7 +121,14 @@ func (t *transportSpec) streamConfig(outbound bool) (*conf.StreamConfig, error) 
 			HealthCheckTimeout: 20,
 			InitialWindowsSize: 65536,
 		}
-	case "h2", "http", "h3", "quic":
+	case "quic":
+		ht := strings.ToLower(t.HeaderType)
+		if ht == "" {
+			ht = "none"
+		}
+		header, _ := json.Marshal(map[string]string{"type": ht})
+		s.QUICSettings = &conf.QUICConfig{Header: header, Security: t.QuicSecurity, Key: t.QuicKey}
+	case "h2", "http", "h3":
 		return nil, fmt.Errorf("transport %q was removed from xray-core; use the sing-box or automatic core for this link", netName)
 	default:
 		return nil, fmt.Errorf("unsupported transport %q", t.Network)
@@ -174,18 +186,13 @@ func (t *transportSpec) fingerprint() string {
 }
 
 // applyOutboundSecurity adds the TLS or REALITY client settings.
-//
-// xray-core removed "allowInsecure" (Build() hard-errors on it), and its
-// replacement "verifyPeerCertByName" still verifies the chain against the
-// system roots, so an insecure request cannot be honoured on this core:
-// self-signed servers need "pcs" (a certificate pin) or the sing-box core.
-// The automatic core routes such links to sing-box (see PrefersSingbox).
 func (t *transportSpec) applyOutboundSecurity(s *conf.StreamConfig) {
 	switch t.security() {
 	case "tls":
 		s.TLSSettings = &conf.TLSConfig{
 			Fingerprint:          t.fingerprint(),
 			ServerName:           t.serverName(),
+			AllowInsecure:        t.Insecure,
 			PinnedPeerCertSha256: t.PinnedPeerCertSha256,
 			VerifyPeerCertByName: t.VerifyPeerCertByName,
 			ECHConfigList:        t.ECHConfigList,

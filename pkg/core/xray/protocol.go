@@ -4,8 +4,6 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/GFW-knocker/Xray-core/common/geodata"
-	xnet "github.com/GFW-knocker/Xray-core/common/net"
 	"github.com/lilendian0x00/xray-knife/v11/pkg/core/mtproto"
 	"github.com/lilendian0x00/xray-knife/v11/pkg/core/protocol"
 )
@@ -59,14 +57,11 @@ func (c *Core) CreateProtocol(configLink string) (protocol.Protocol, error) {
 // SingboxReason reports why a parsed link should run on sing-box rather
 // than xray-core, or "" when xray can carry it. insecure is the caller's
 // global --insecure setting. Reasons:
-//   - a transport xray-core removed (h2/http, quic),
-//   - a Shadowsocks plugin or legacy stream cipher,
-//   - a request to skip TLS verification: xray-core can only pin or verify,
-//     so self-signed servers would always fail there. Links that pin their
-//     certificate ("pcs") stay on xray, as do transports and features only
-//     xray implements (xhttp, kcp, REALITY, TCP HTTP obfuscation),
-//   - VLESS or Trojan without TLS to a public server, which xray-core
-//     refuses to build.
+//   - a transport xray-core removed (h2/http),
+//   - a Shadowsocks plugin or legacy stream cipher.
+//
+// The Mahsa core still honours allowInsecure, VLESS and Trojan without TLS
+// and quic, so those links stay on xray.
 func SingboxReason(p Protocol, insecure bool) string {
 	switch v := p.(type) {
 	case *Shadowsocks:
@@ -83,24 +78,13 @@ func SingboxReason(p Protocol, insecure bool) string {
 		return v.xrayUnsupported()
 	case *Vless:
 		ts := v.transport()
-		if enc := strings.ToLower(v.Encryption); enc != "" && enc != "none" {
-			// VLESS encryption is xray-only; sing-box would drop it. Keep the
-			// link on xray even when insecure TLS then can't be honoured.
-			return removedTransport(&ts)
-		}
-		if reason := ts.plaintextReason(v.Address); reason != "" {
-			return reason
-		}
-		return ts.singboxReason(insecure || v.wantsInsecure())
+		return removedTransport(&ts)
 	case *Trojan:
 		ts := v.transport()
-		if reason := ts.plaintextReason(v.Address); reason != "" {
-			return reason
-		}
-		return ts.singboxReason(insecure || v.wantsInsecure())
+		return removedTransport(&ts)
 	case *Vmess:
 		ts := v.transport()
-		return ts.singboxReason(insecure || v.wantsInsecure())
+		return removedTransport(&ts)
 	}
 	return ""
 }
@@ -108,59 +92,8 @@ func SingboxReason(p Protocol, insecure bool) string {
 // removedTransport reports a transport only sing-box still implements.
 func removedTransport(t *transportSpec) string {
 	switch n := t.network(); n {
-	case "h2", "http", "quic", "h3":
+	case "h2", "http", "h3":
 		return "transport " + n + " (removed from xray-core)"
 	}
 	return ""
-}
-
-// plaintextReason moves a link without TLS to a public server to sing-box,
-// when sing-box has its transport. xray-core only allows that to private
-// addresses (infra/conf validateOutboundTransportSecurity).
-func (t *transportSpec) plaintextReason(address string) string {
-	if t.security() != "none" || !isPublicAddress(address) {
-		return ""
-	}
-	switch t.network() {
-	case "tcp", "raw":
-		if ht := strings.ToLower(t.HeaderType); ht != "" && ht != "none" {
-			return ""
-		}
-	case "ws", "grpc", "httpupgrade":
-	default:
-		return ""
-	}
-	return "no TLS to a public server (refused by xray-core)"
-}
-
-// isPublicAddress matches xray-core's rule: anything outside its private IP
-// and private domain lists.
-func isPublicAddress(address string) bool {
-	addr := xnet.ParseAddress(address)
-	if addr.Family().IsIP() {
-		return !geodata.GetPrivateIPMatcher().Match(addr.IP())
-	}
-	return !geodata.GetPrivateDomainMatcher().MatchAny(strings.TrimSuffix(strings.ToLower(addr.Domain()), "."))
-}
-
-func (t *transportSpec) singboxReason(insecure bool) string {
-	if reason := removedTransport(t); reason != "" {
-		return reason
-	}
-	// Moving is only worth it when sing-box keeps everything the link
-	// says. ECH is dropped by xray-knife's sing-box builders, so such links
-	// stay on xray (which warns that insecure can't apply).
-	if !insecure || t.security() != "tls" || t.PinnedPeerCertSha256 != "" || t.ECHConfigList != "" {
-		return ""
-	}
-	switch t.network() {
-	case "tcp", "raw":
-		if ht := strings.ToLower(t.HeaderType); ht != "" && ht != "none" {
-			return "" // TCP HTTP obfuscation is xray-only
-		}
-	case "ws", "grpc", "httpupgrade":
-	default:
-		return ""
-	}
-	return "insecure TLS (xray-core cannot skip certificate verification)"
 }

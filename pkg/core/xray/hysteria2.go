@@ -185,8 +185,6 @@ func (h *Hysteria2) BuildOutboundDetourConfig(allowInsecure bool) (*conf.Outboun
 
 	// The auth string lives in the transport's hysteriaSettings; TLS/SNI is
 	// read from the stream security settings (tls.ConfigFromStreamSettings).
-	// Certificate checks can only be relaxed by pinning (pinSHA256): see
-	// transportSpec.applyOutboundSecurity.
 	network := conf.TransportProtocol("hysteria")
 	s := &conf.StreamConfig{
 		Network:  &network,
@@ -197,6 +195,7 @@ func (h *Hysteria2) BuildOutboundDetourConfig(allowInsecure bool) (*conf.Outboun
 		},
 		TLSSettings: &conf.TLSConfig{
 			ServerName:           h.SNI,
+			AllowInsecure:        allowInsecure || h.wantsInsecure(),
 			PinnedPeerCertSha256: h.PinSHA256,
 		},
 	}

@@ -280,6 +280,8 @@ func (v *Vless) transport() transportSpec {
 		ServiceName:          v.ServiceName,
 		Authority:            v.Authority,
 		Extra:                v.Extra,
+		QuicSecurity:         v.QuicSecurity,
+		QuicKey:              v.Key,
 		Security:             v.Security,
 		SNI:                  v.SNI,
 		ALPN:                 v.ALPN,
@@ -299,6 +301,7 @@ func (v *Vless) wantsInsecure() bool { return truthy(v.AllowInsecure) }
 
 func (v *Vless) BuildOutboundDetourConfig(allowInsecure bool) (*conf.OutboundDetourConfig, error) {
 	ts := v.transport()
+	ts.Insecure = allowInsecure || v.wantsInsecure()
 	s, err := ts.outboundStream()
 	if err != nil {
 		return nil, err

@@ -306,6 +306,7 @@ func (v *Vmess) BuildOutboundDetourConfig(allowInsecure bool) (*conf.OutboundDet
 	if ts.security() == "reality" {
 		return nil, fmt.Errorf("vmess does not support REALITY")
 	}
+	ts.Insecure = allowInsecure || v.wantsInsecure()
 	s, err := ts.outboundStream()
 	if err != nil {
 		return nil, err

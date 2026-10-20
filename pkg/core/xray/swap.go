@@ -298,7 +298,6 @@ func (c *Core) swapOutbounds(hops []protocol.Protocol, gen int) ([]*conf.Outboun
 		if err != nil {
 			return nil, fmt.Errorf("hop %d: %w", i, err)
 		}
-		c.warnInsecure(out)
 		ob, err := out.BuildOutboundDetourConfig(c.AllowInsecure)
 		if err != nil {
 			return nil, fmt.Errorf("hop %d: %w", i, err)

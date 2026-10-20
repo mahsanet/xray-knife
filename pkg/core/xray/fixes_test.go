@@ -7,10 +7,9 @@ import (
 	"testing"
 )
 
-// TestBuild_TLSInsecureDoesNotError proves B1 is fixed: a TLS config with
-// insecure requested must build (xray-core removed "allowInsecure" and now
-// hard-errors on it after 2026-06-01). xray can't skip verification, so
-// insecure alone sets nothing; "vcn" from the link is passed through.
+// TestBuild_TLSInsecureDoesNotError: a TLS config with insecure requested
+// must build and set allowInsecure, which the Mahsa core still honours;
+// "vcn" from the link is passed through.
 func TestBuild_TLSInsecureDoesNotError(t *testing.T) {
 	cases := []struct {
 		name    string
@@ -39,8 +38,8 @@ func TestBuild_TLSInsecureDoesNotError(t *testing.T) {
 			if ob.StreamSetting.TLSSettings == nil {
 				t.Fatalf("expected TLSSettings")
 			}
-			if ob.StreamSetting.TLSSettings.AllowInsecure {
-				t.Errorf("AllowInsecure must not be set (removed by xray-core)")
+			if !ob.StreamSetting.TLSSettings.AllowInsecure {
+				t.Errorf("AllowInsecure must be set")
 			}
 			if got := ob.StreamSetting.TLSSettings.VerifyPeerCertByName; got != tc.wantVCN {
 				t.Errorf("VerifyPeerCertByName = %q, want %q", got, tc.wantVCN)
