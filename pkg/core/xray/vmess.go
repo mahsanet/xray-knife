@@ -42,9 +42,7 @@ func method1(v *Vmess, link string) error {
 	if !validHostList(strings.TrimSpace(v.Host)) {
 		v.Host = "" // junk like "@channel" shows up in exports; drop it rather than reject the link
 	}
-	if !validSNI(strings.TrimSpace(v.SNI)) {
-		return fmt.Errorf("invalid characters in 'sni' parameter: %q", v.SNI)
-	}
+	// sni is kept as given, the test decides
 	v.Host = strings.TrimSpace(v.Host)
 	v.SNI = strings.TrimSpace(v.SNI)
 	v.Address = unbracket(strings.TrimSpace(v.Address))
@@ -119,13 +117,9 @@ func method2(v *Vmess, link string) error {
 
 	// SNI & HOST Validation
 	if !validHostList(host) {
-		return fmt.Errorf("invalid characters in 'host' parameter: %q", host)
+		host = ""
 	}
 	v.Host = host
-
-	if !validSNI(sni) {
-		return fmt.Errorf("invalid characters in 'sni' parameter: %q", sni)
-	}
 	v.SNI = sni
 
 	return nil

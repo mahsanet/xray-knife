@@ -113,9 +113,9 @@ func TestParseVlessDefaultsAndHosts(t *testing.T) {
 		buildOK(t, v)
 	}
 	if _, err := (&Core{}).CreateProtocol("vless://x@1.2.3.4:80?host=a%20b"); err == nil {
-		p := NewVless("vless://x@1.2.3.4:80?host=a%20b")
-		if err := p.Parse(); err == nil {
-			t.Error("host with a space accepted")
+		p := NewVless("vless://x@1.2.3.4:80?host=a%20b").(*Vless)
+		if err := p.Parse(); err != nil || p.Host != "" {
+			t.Errorf("host with a space kept: %q, %v", p.Host, err)
 		}
 	}
 
