@@ -247,6 +247,21 @@ func TestVmess_JunkTcpHeaderType(t *testing.T) {
 	}
 }
 
+// TestVmess_JunkHostDropped: an invalid host is dropped instead of rejecting the link.
+func TestVmess_JunkHostDropped(t *testing.T) {
+	j := `{"v":"2","add":"1.2.3.4","port":"443","id":"a1a1a1a1-b2b2-c3c3-d4d4-e5e5e5e5e5e5","aid":"0","net":"tcp","host":"@chan","ps":"x"}`
+	p, err := (&Core{}).CreateProtocol("vmess://" + base64.StdEncoding.EncodeToString([]byte(j)))
+	if err != nil {
+		t.Fatalf("CreateProtocol: %v", err)
+	}
+	if err := p.(Protocol).Parse(); err != nil {
+		t.Fatalf("Parse: %v", err)
+	}
+	if h := p.(*Vmess).Host; h != "" {
+		t.Errorf("host = %q", h)
+	}
+}
+
 // b64VmessTLS returns a base64 vmess payload with tls enabled for the insecure test.
 func b64VmessTLS() string {
 	j := `{"v":"2","add":"1.2.3.4","port":"443","id":"a1a1a1a1-b2b2-c3c3-d4d4-e5e5e5e5e5e5","aid":"0","net":"tcp","tls":"tls","sni":"example.com","ps":"x"}`

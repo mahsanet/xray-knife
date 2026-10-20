@@ -40,7 +40,7 @@ func method1(v *Vmess, link string) error {
 
 	// SNI & HOST Validation
 	if !validHostList(strings.TrimSpace(v.Host)) {
-		return fmt.Errorf("invalid characters in 'host' parameter: %q", v.Host)
+		v.Host = "" // junk like "@channel" shows up in exports; drop it rather than reject the link
 	}
 	if !validSNI(strings.TrimSpace(v.SNI)) {
 		return fmt.Errorf("invalid characters in 'sni' parameter: %q", v.SNI)
