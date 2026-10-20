@@ -23,6 +23,7 @@ import (
 	"github.com/fatih/color"
 	xproxy "golang.org/x/net/proxy"
 
+	"github.com/GFW-knocker/Xray-core/common/uuid"
 	"github.com/lilendian0x00/xray-knife/v11/database"
 	"github.com/lilendian0x00/xray-knife/v11/pkg/core"
 	"github.com/lilendian0x00/xray-knife/v11/pkg/core/fragment"
@@ -36,7 +37,6 @@ import (
 	"github.com/lilendian0x00/xray-knife/v11/pkg/proxy/sysproxy"
 	"github.com/lilendian0x00/xray-knife/v11/utils"
 	"github.com/lilendian0x00/xray-knife/v11/utils/customlog"
-	"github.com/xtls/xray-core/common/uuid"
 )
 
 // Rotation tuning defaults.

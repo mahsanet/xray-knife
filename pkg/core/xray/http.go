@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/xtls/xray-core/infra/conf"
+	"github.com/GFW-knocker/Xray-core/infra/conf"
 
 	"github.com/lilendian0x00/xray-knife/v11/pkg/core/protocol"
 )

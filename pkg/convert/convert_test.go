@@ -13,6 +13,7 @@ import (
 	"github.com/lilendian0x00/xray-knife/v11/pkg/core/singbox"
 	"github.com/lilendian0x00/xray-knife/v11/pkg/subscription"
 
+	"github.com/GFW-knocker/Xray-core/infra/conf"
 	box "github.com/sagernet/sing-box"
 	"github.com/sagernet/sing-box/adapter"
 	"github.com/sagernet/sing-box/adapter/certificate"
@@ -42,7 +43,6 @@ import (
 	"github.com/sagernet/sing-box/protocol/wireguard"
 	sjson "github.com/sagernet/sing/common/json"
 	"github.com/sagernet/sing/service"
-	"github.com/xtls/xray-core/infra/conf"
 	"gopkg.in/yaml.v3"
 )
 

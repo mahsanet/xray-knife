@@ -8,8 +8,8 @@ import (
 
 	"github.com/lilendian0x00/xray-knife/v11/pkg/core/protocol"
 
-	"github.com/xtls/xray-core/core"
-	"github.com/xtls/xray-core/infra/conf"
+	"github.com/GFW-knocker/Xray-core/core"
+	"github.com/GFW-knocker/Xray-core/infra/conf"
 )
 
 func chainTag(i int) string { return fmt.Sprintf("chain-%d", i) }

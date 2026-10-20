@@ -9,7 +9,7 @@ import (
 	"github.com/lilendian0x00/xray-knife/v11/pkg/core/singbox"
 	"github.com/lilendian0x00/xray-knife/v11/pkg/core/xray"
 
-	"github.com/xtls/xray-core/infra/conf"
+	"github.com/GFW-knocker/Xray-core/infra/conf"
 )
 
 // ToXray renders links as an xray config holding one outbound per link

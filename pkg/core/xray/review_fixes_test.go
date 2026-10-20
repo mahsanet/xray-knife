@@ -12,8 +12,8 @@ import (
 
 	"github.com/lilendian0x00/xray-knife/v11/pkg/core/protocol"
 
-	"github.com/xtls/xray-core/app/proxyman"
-	"github.com/xtls/xray-core/features/outbound"
+	"github.com/GFW-knocker/Xray-core/app/proxyman"
+	"github.com/GFW-knocker/Xray-core/features/outbound"
 )
 
 // A chained xhttp hop with extra.downloadSettings opens its download
