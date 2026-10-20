@@ -599,3 +599,15 @@ func TestShadowsocksRawSemicolonPluginOptions(t *testing.T) {
 		t.Fatalf("crafted plugin = %q %q", o.Plugin, o.PluginOptions)
 	}
 }
+
+func TestShadowsocksPlainIsNone(t *testing.T) {
+	c := NewSingboxService(false, false)
+	ss := parseLink(t, c, "ss://plain:pw@1.2.3.4:8388#x").(*Shadowsocks)
+	out, err := ss.CraftOutboundOptions(false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if m := out.Options.(*option.ShadowsocksOutboundOptions).Method; m != "none" {
+		t.Fatalf("method = %q", m)
+	}
+}
