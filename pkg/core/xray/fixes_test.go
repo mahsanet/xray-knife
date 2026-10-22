@@ -55,6 +55,34 @@ func TestBuild_TLSInsecureDoesNotError(t *testing.T) {
 	}
 }
 
+// TestBuild_PlaintextToPublicServer: upstream xray-core refuses VLESS and
+// Trojan without TLS to a public address, so upstream xray-knife moves such
+// links to sing-box. The GFW-knocker core drops that check and the links stay
+// on xray, so the full build must succeed.
+func TestBuild_PlaintextToPublicServer(t *testing.T) {
+	for _, link := range []string{
+		"vless://a1a1a1a1-b2b2-c3c3-d4d4-e5e5e5e5e5e5@1.2.3.4:80?encryption=none&security=none&type=ws&path=%2F",
+		"vless://a1a1a1a1-b2b2-c3c3-d4d4-e5e5e5e5e5e5@example.com:80?encryption=none&security=none&type=tcp",
+		"trojan://password@1.2.3.4:80?security=none&type=grpc&serviceName=svc",
+	} {
+		p, err := (&Core{}).CreateProtocol(link)
+		if err != nil {
+			t.Fatalf("CreateProtocol(%s): %v", link, err)
+		}
+		xp := p.(Protocol)
+		if err := xp.Parse(); err != nil {
+			t.Fatalf("Parse(%s): %v", link, err)
+		}
+		ob, err := xp.BuildOutboundDetourConfig(false)
+		if err != nil {
+			t.Fatalf("BuildOutboundDetourConfig(%s): %v", link, err)
+		}
+		if _, err := ob.Build(); err != nil {
+			t.Errorf("ob.Build(%s): %v", link, err)
+		}
+	}
+}
+
 // TestBuild_KCPDoesNotError proves B2 is fixed: mKCP header/seed were removed
 // and hard-error; a kcp config must build with bare defaults.
 func TestBuild_KCPDoesNotError(t *testing.T) {

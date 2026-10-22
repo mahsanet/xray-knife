@@ -127,11 +127,11 @@ func TestSingboxReasonKeepsXrayOnlyFeatures(t *testing.T) {
 		"trojan://pw@1.2.3.4:443?type=tcp&allow_insecure=1":                                                               false,
 		"ss://none:pw@1.2.3.4:8388":  true,
 		"ss://plain:pw@1.2.3.4:8388": true,
-		// xray-core refuses VLESS/Trojan without TLS to public servers
-		"vless://" + id + "@1.2.3.4:80?security=none&type=ws":  true,
+		// The GFW-knocker core builds VLESS/Trojan without TLS to public servers
+		"vless://" + id + "@1.2.3.4:80?security=none&type=ws":  false,
 		"vless://" + id + "@10.0.0.1:80?security=none&type=ws": false,
 		"vless://" + id + "@1.2.3.4:80?security=none&type=kcp": false, // kcp is xray-only
-		"trojan://pw@example.com:80?security=none&type=grpc":   true,
+		"trojan://pw@example.com:80?security=none&type=grpc":   false,
 		"trojan://pw@localhost:80?security=none&type=grpc":     false,
 	}
 	for link, want := range cases {

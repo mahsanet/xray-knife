@@ -28,7 +28,7 @@ func TestAutomaticCoreRoutesByCapability(t *testing.T) {
 		{"ss plugin", "ss://aes-128-gcm:pass@1.2.3.4:8388/?plugin=obfs-local%3Bobfs%3Dhttp", false, true},
 		{"aead ss", "ss://aes-128-gcm:pass@1.2.3.4:8388", false, false},
 		{"upper-case scheme", "VLESS://" + id + "@10.0.0.1:443?security=none", false, false},
-		{"plaintext to a public server moves to sing-box", "vless://" + id + "@1.2.3.4:80?security=none&type=ws", false, true},
+		{"plaintext to a public server stays on xray", "vless://" + id + "@1.2.3.4:80?security=none&type=ws", false, false},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
