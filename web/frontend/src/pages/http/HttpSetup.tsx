@@ -68,7 +68,15 @@ export function HttpSetup(p: HttpSetupProps) {
     const set = <K extends keyof HttpTesterSettings>(k: K) => (v: HttpTesterSettings[K]) => update({ [k]: v } as Partial<HttpTesterSettings>);
     const pct = progress.total > 0 ? (progress.completed / progress.total) * 100 : 0;
 
-    const targetSummary = s.checkPreset === "none" ? s.destURL.replace(/^https?:\/\//, "") : s.checkPreset === "custom" ? t("Custom panel") : t(PRESET_LABELS[s.checkPreset]);
+    const coreLabel = s.coreType === "auto" ? t("Automatic") : s.coreType === "xray" ? "Xray" : "sing-box";
+    const generalSummary = [
+        t("{n} threads", { n: s.threadCount }),
+        t("{n} ms", { n: s.maxDelay }),
+        coreLabel,
+        s.speedtest && t("speed test"),
+        s.doIPInfo && t("exit IP"),
+    ].filter(Boolean).join(", ");
+    const targetSummary =s.checkPreset === "none" ? s.destURL.replace(/^https?:\/\//, "") : s.checkPreset === "custom" ? t("Custom panel") : t(PRESET_LABELS[s.checkPreset]);
     const advancedBits = [
         s.timeout > 0 && t("timeout {n} ms", { n: s.timeout }),
         s.retries > 0 && t("{n} retries", { n: s.retries }),
@@ -112,7 +120,7 @@ export function HttpSetup(p: HttpSetupProps) {
                     </Field>
                 )}
                 {p.source === "links" && (
-                    <LinkInput id="http-links" label={t("Share links")} value={p.links} onChange={p.setLinks} disabled={busy} tooLarge={p.linksTooLarge}
+                    <LinkInput id="http-links" label={t("Share links")} value={p.links} onChange={p.setLinks} disabled={busy} tooLarge={p.linksTooLarge} wrapToggle
                         placeholder={"vless://…\nvmess://…\ntrojan://…\nhysteria2://…\ntg://proxy?…"} />
                 )}
                 {p.source === "subscription" && (
@@ -146,47 +154,77 @@ export function HttpSetup(p: HttpSetupProps) {
                         </Field>
                     </div>
                 )}
+            </fieldset>
 
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                    <Field id="http-threads" label={t("Threads")}>
-                        <InputNumber id="http-threads" label={t("Threads")} min={1} max={maxThreads} value={s.threadCount} onChange={set("threadCount")} />
-                    </Field>
-                    <Field id="http-maxdelay" label={t("Max delay (ms)")}>
-                        <InputNumber id="http-maxdelay" label={t("Max delay")} min={100} max={65535} step={500} value={s.maxDelay} onChange={set("maxDelay")} />
-                    </Field>
-                    <Field id="http-core" label={t("Core")} className="col-span-2 sm:col-span-1">
-                        <Select value={s.coreType} onValueChange={(v) => update({ coreType: v as HttpTesterSettings["coreType"] })}>
-                            <SelectTrigger id="http-core"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="auto">{t("Automatic")}</SelectItem>
-                                <SelectItem value="xray">Xray</SelectItem>
-                                <SelectItem value="singbox">sing-box</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </Field>
-                </div>
-
-                <div className="space-y-3">
-                    <CheckRow id="http-speed" label={t("Measure download and upload speed")} hint={t("Slower: each passing config transfers data.")}>
-                        <Checkbox id="http-speed" checked={s.speedtest} onCheckedChange={(c) => update({ speedtest: Boolean(c) })} />
-                    </CheckRow>
-                    {s.speedtest && (
-                        <div className="grid grid-cols-2 gap-3 ps-6">
-                            <Field id="http-speed-kb" label={t("Transfer (KB)")}>
-                                <InputNumber id="http-speed-kb" label={t("Transfer size")} min={100} max={1_000_000} step={1000} value={s.speedtestAmount} onChange={set("speedtestAmount")} />
-                            </Field>
-                            <Field id="http-speed-to" label={t("Speed timeout (s)")} hint={t("0 = automatic")}>
-                                <InputNumber id="http-speed-to" label={t("Speed timeout")} min={0} max={600} value={s.speedtestTimeout} onChange={set("speedtestTimeout")} />
-                            </Field>
-                            <Field id="http-speed-url" label={t("Speed test server (optional)")} hint={t("Empty = speed.cloudflare.com. A URL with a path is used as a plain download.")} className="col-span-2">
-                                <Input id="http-speed-url" value={s.speedtestURL} onChange={(e) => update({ speedtestURL: e.target.value })} placeholder="https://speed.cloudflare.com" dir="ltr" className="font-mono text-xs md:text-xs" inputMode="url" />
-                            </Field>
-                        </div>
+            {/* Outside the fieldsets: Stop must stay usable while they are disabled. */}
+            <div className="space-y-3">
+                <div className="flex gap-2">
+                    {status === "idle" ? (
+                        <Button className="flex-1" onClick={p.onRun}><Play aria-hidden />{t("Run test")}</Button>
+                    ) : (
+                        <Button className="flex-1" disabled>
+                            <Loader2 className="animate-spin" aria-hidden />
+                            {status === "starting" ? t("Starting…") : status === "stopping" ? t("Stopping…") : t("Testing…")}
+                        </Button>
                     )}
-                    <CheckRow id="http-ipinfo" label={t("Look up exit IP and country")}>
-                        <Checkbox id="http-ipinfo" checked={s.doIPInfo} onCheckedChange={(c) => update({ doIPInfo: Boolean(c) })} />
-                    </CheckRow>
+                    <Button variant="stop" onClick={p.onStop} disabled={status !== "running" && status !== "starting"}>
+                        <Square aria-hidden />{t("Stop")}
+                    </Button>
                 </div>
+                {(status === "running" || status === "stopping") && (
+                    <div className="space-y-1.5" aria-live="polite">
+                        <div className="flex justify-between text-xs text-muted-foreground">
+                            <span>{phase && phase.phase !== "testing" ? (phase.message || t("Preparing: {phase}", { phase: phase.phase })) : t("Testing")}</span>
+                            <span className="num">{progress.total > 0 ? `${formatCount(progress.completed)} / ${formatCount(progress.total)}` : ""}</span>
+                        </div>
+                        <Progress value={pct} aria-label={t("Test progress")} />
+                    </div>
+                )}
+            </div>
+
+            <fieldset disabled={busy} className="space-y-5">
+                <Collapsible title={t("General settings")} summary={generalSummary}>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        <Field id="http-threads" label={t("Threads")}>
+                            <InputNumber id="http-threads" label={t("Threads")} min={1} max={maxThreads} value={s.threadCount} onChange={set("threadCount")} />
+                        </Field>
+                        <Field id="http-maxdelay" label={t("Max delay (ms)")}>
+                            <InputNumber id="http-maxdelay" label={t("Max delay")} min={100} max={65535} step={500} value={s.maxDelay} onChange={set("maxDelay")} />
+                        </Field>
+                        <Field id="http-core" label={t("Core")} className="col-span-2 sm:col-span-1">
+                            <Select value={s.coreType} onValueChange={(v) => update({ coreType: v as HttpTesterSettings["coreType"] })}>
+                                <SelectTrigger id="http-core"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="auto">{t("Automatic")}</SelectItem>
+                                    <SelectItem value="xray">Xray</SelectItem>
+                                    <SelectItem value="singbox">sing-box</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </Field>
+                    </div>
+
+                    <div className="space-y-3">
+                        <CheckRow id="http-speed" label={t("Measure download and upload speed")} hint={t("Slower: each passing config transfers data.")}>
+                            <Checkbox id="http-speed" checked={s.speedtest} onCheckedChange={(c) => update({ speedtest: Boolean(c) })} />
+                        </CheckRow>
+                        {s.speedtest && (
+                            <div className="grid grid-cols-2 gap-3 ps-6">
+                                <Field id="http-speed-kb" label={t("Transfer (KB)")}>
+                                    <InputNumber id="http-speed-kb" label={t("Transfer size")} min={100} max={1_000_000} step={1000} value={s.speedtestAmount} onChange={set("speedtestAmount")} />
+                                </Field>
+                                <Field id="http-speed-to" label={t("Speed timeout (s)")} hint={t("0 = automatic")}>
+                                    <InputNumber id="http-speed-to" label={t("Speed timeout")} min={0} max={600} value={s.speedtestTimeout} onChange={set("speedtestTimeout")} />
+                                </Field>
+                                <Field id="http-speed-url" label={t("Speed test server (optional)")} hint={t("Empty = speed.cloudflare.com. A URL with a path is used as a plain download.")} className="col-span-2">
+                                    <Input id="http-speed-url" value={s.speedtestURL} onChange={(e) => update({ speedtestURL: e.target.value })} placeholder="https://speed.cloudflare.com" dir="ltr" className="font-mono text-xs md:text-xs" inputMode="url" />
+                                </Field>
+                            </div>
+                        )}
+                        <CheckRow id="http-ipinfo" label={t("Look up exit IP and country")}>
+                            <Checkbox id="http-ipinfo" checked={s.doIPInfo} onCheckedChange={(c) => update({ doIPInfo: Boolean(c) })} />
+                        </CheckRow>
+                    </div>
+                </Collapsible>
 
                 <Collapsible title={t("Test target")} summary={targetSummary}>
                     <Field id="http-preset" label={t("Check")} hint={s.checkPreset === "none" ? t("One URL decides pass or fail.") : t("Several sites are probed; the pass threshold decides.")}>
@@ -273,31 +311,6 @@ export function HttpSetup(p: HttpSetupProps) {
 
                 <FragmentFields idPrefix="http" value={s.fragment} onChange={(fragment) => update({ fragment })} disabled={busy} core={s.coreType} />
             </fieldset>
-
-            <div className="space-y-3">
-                <div className="flex gap-2">
-                    {status === "idle" ? (
-                        <Button className="flex-1" onClick={p.onRun}><Play aria-hidden />{t("Run test")}</Button>
-                    ) : (
-                        <Button className="flex-1" disabled>
-                            <Loader2 className="animate-spin" aria-hidden />
-                            {status === "starting" ? t("Starting…") : status === "stopping" ? t("Stopping…") : t("Testing…")}
-                        </Button>
-                    )}
-                    <Button variant="stop" onClick={p.onStop} disabled={status !== "running" && status !== "starting"}>
-                        <Square aria-hidden />{t("Stop")}
-                    </Button>
-                </div>
-                {(status === "running" || status === "stopping") && (
-                    <div className="space-y-1.5" aria-live="polite">
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                            <span>{phase && phase.phase !== "testing" ? (phase.message || t("Preparing: {phase}", { phase: phase.phase })) : t("Testing")}</span>
-                            <span className="num">{progress.total > 0 ? `${formatCount(progress.completed)} / ${formatCount(progress.total)}` : ""}</span>
-                        </div>
-                        <Progress value={pct} aria-label={t("Test progress")} />
-                    </div>
-                )}
-            </div>
         </Panel>
     );
 }

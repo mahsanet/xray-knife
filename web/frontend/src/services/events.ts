@@ -244,9 +244,9 @@ class EventService {
                     const error = terminal === "error" ? (env.error || env.message || "The HTTP test failed") : null;
                     rt.setHttpStatus("idle", error);
                     if (terminal === "error") toast.error("HTTP test failed", { description: error ?? undefined });
-                    else if (prev !== "stopping") {
-                        const early = env.reason === "max_passed" ? " (stopped early: enough configs passed)" : "";
-                        toast.success(terminal === "finished" ? `HTTP test finished${early}` : "HTTP test stopped", {
+                    // A finished run shows in the results panel; no toast.
+                    else if (terminal !== "finished" && prev !== "stopping") {
+                        toast.success("HTTP test stopped", {
                             description: summaryText(env.summary, env.failureKinds) || undefined,
                         });
                     }

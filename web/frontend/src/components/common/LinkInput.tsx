@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { usePersistentState } from "@/hooks/usePersistentState";
 import { analyzeLinks, analyzeSubnets } from "@/lib/links";
 import { cn, formatCount } from "@/lib/utils";
 import { useT } from "@/i18n";
@@ -22,12 +24,16 @@ interface LinkInputProps {
     /** Extra action rendered at the end of the label row (e.g. "Load CF ranges"). */
     action?: React.ReactNode;
     tooLarge?: boolean;
+    /** Show a "Word wrap" switch (on by default, remembered per input). */
+    wrapToggle?: boolean;
 }
 
-export function LinkInput({ id, label, value, onChange, kind = "links", disabled, placeholder, rows = 8, action, tooLarge }: LinkInputProps) {
+export function LinkInput({ id, label, value, onChange, kind = "links", disabled, placeholder, rows = 8, action, tooLarge, wrapToggle }: LinkInputProps) {
     const t = useT();
     const fileRef = useRef<HTMLInputElement>(null);
     const [dragging, setDragging] = useState(false);
+    const [wrapPref, setWrap] = usePersistentState(`${id}-wrap`, true);
+    const wrap = wrapToggle && wrapPref;
     // Analysis of a pasted 40k-line list must not block typing.
     const deferred = useDeferredValue(value);
     const stats = useMemo(() => {
@@ -101,7 +107,7 @@ export function LinkInput({ id, label, value, onChange, kind = "links", disabled
                     autoCapitalize="off"
                     autoCorrect="off"
                     aria-describedby={`${id}-stats`}
-                    className="min-h-32 resize-y whitespace-pre font-mono text-[12.5px] leading-5 md:text-[12.5px]"
+                    className={cn("min-h-32 resize-y font-mono text-[12.5px] leading-5 md:text-[12.5px]", wrap ? "whitespace-pre-wrap break-all" : "whitespace-pre")}
                     dir="ltr"
                 />
                 {dragging && (
@@ -122,7 +128,13 @@ export function LinkInput({ id, label, value, onChange, kind = "links", disabled
                 )}
                 {stats.extra && <span className="num">{stats.extra}</span>}
                 {tooLarge && <span className="text-semi">{t("Too large to remember after reload")}</span>}
-                <span className="ms-auto flex gap-1">
+                <span className="ms-auto flex items-center gap-1">
+                    {wrapToggle && (
+                        <label className="me-1 flex cursor-pointer items-center gap-1.5 text-xs">
+                            <Switch checked={wrapPref} onCheckedChange={setWrap} aria-label={t("Word wrap")} />
+                            {t("Word wrap")}
+                        </label>
+                    )}
                     {hasProblems && (
                         <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs" disabled={disabled} onClick={() => onChange(stats.cleaned.join("\n"))}>
                             <Sparkles aria-hidden />{t("Clean up")}
