@@ -10,7 +10,7 @@ export interface LinkAnalysis {
 
 const SCHEME_RE = /^([a-z][a-z0-9+.-]*):\/\/\S+$/i
 const KNOWN_SCHEMES = new Set([
-    "vmess", "vless", "trojan", "ss", "ssr", "socks", "socks4", "socks5", "socks5h", "http", "https",
+    "vmess", "vless", "mvless", "trojan", "ss", "ssr", "socks", "socks4", "socks5", "socks5h", "http", "https",
     "hysteria", "hysteria2", "hy2", "tuic", "wireguard", "wg", "anytls", "ssh", "tg", "shadowtls", "naive+https",
 ])
 
@@ -169,7 +169,7 @@ export function replaceAddress(link: string, ip: string): string | null {
             return null;
         }
     }
-    const m = /^(vless|trojan|ss|hysteria2|hy2):\/\/([^@/?#]*@)?(\[[^\]]+\]|[^:/?#]+)(:\d+)?([^#]*)(#.*)?$/i.exec(link);
+    const m = /^(vless|mvless|trojan|ss|hysteria2|hy2):\/\/([^@/?#]*@)?(\[[^\]]+\]|[^:/?#]+)(:\d+)?([^#]*)(#.*)?$/i.exec(link);
     if (!m) return null;
     const [, scheme, userinfo = "", oldHost, port = "", rest = "", frag = ""] = m;
     let query = rest;

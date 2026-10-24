@@ -299,7 +299,7 @@ Use --from-db to test configs from the database library.`,
 
 // knownProtocols are the protocol names stored in the configs table
 // (mirrors cmd/subs), offered for --protocol completion.
-var knownProtocols = []string{"vless", "vmess", "trojan", "shadowsocks", "socks", "http", "wireguard", "hysteria2", "hysteria", "tuic", "anytls", "ssh", "mtproto"}
+var knownProtocols = []string{"vless", "mvless", "vmess", "trojan", "shadowsocks", "socks", "http", "wireguard", "hysteria2", "hysteria", "tuic", "anytls", "ssh", "mtproto"}
 
 func registerCompletions(cmd *cobra.Command) {
 	fixed := func(values ...string) func(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
