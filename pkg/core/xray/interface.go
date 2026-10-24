@@ -149,6 +149,34 @@ type Wireguard struct {
 	OrigLink string `json:"-"` // Original link
 }
 
+// Masque is a masque:// link as MahsaNG writes it: Cloudflare WARP's MASQUE
+// tunnel (HTTP/3 or HTTP/2), run as the GFW-knocker core's "masque" outbound.
+type Masque struct {
+	Remark           string
+	PrivateKey       string // PEM ("PRIVATE KEY" or "EC PRIVATE KEY"); the link carries its base64 body
+	Endpoint         string // HOST:PORT
+	Transport        string // h3 or h2
+	Address          string // Tunnel addresses (CIDRs), comma-separated
+	MTU              int32
+	RemoteDNS        string // Comma-separated
+	DomainStrategy   string
+	KeepAlive        int32  // Seconds; negative disables the ping
+	Pins             string // pinnedPeerPublicKeySha256, comma-separated
+	SNI              string // Empty sends no SNI
+	Insecure         bool
+	ECHConfigList    string
+	Wnoise           string // HTTP/3 only
+	Wnoisecount      string
+	Wnoisedelay      string
+	Wpayloadsize     string
+	FragmentPackets  string // HTTP/2 only
+	FragmentLength   string
+	FragmentInterval string
+	FinalMask        string // "fm": finalmask JSON
+
+	OrigLink string // Original link
+}
+
 type Socks struct {
 	Remark   string
 	Address  string // HOST:PORT

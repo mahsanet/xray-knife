@@ -21,7 +21,7 @@ type protocolInfo struct {
 // candidateSchemes are the schemes worth probing; aliases (hy2, socks5)
 // route like their canonical names and are left out.
 var candidateSchemes = []string{
-	"vmess", "vless", "mvless", "trojan", "ss", "socks", "wireguard",
+	"vmess", "vless", "mvless", "trojan", "ss", "socks", "wireguard", "masque",
 	"hysteria2", "hysteria", "tuic", "anytls", "ssh", "shadowtls", "naive",
 }
 

@@ -12,6 +12,7 @@ const (
 	TrojanIdentifier      = "trojan"
 	ShadowsocksIdentifier = "ss"
 	WireguardIdentifier   = "wireguard"
+	MasqueIdentifier      = "masque" // GFW-knocker xray core only
 	SocksIdentifier       = "socks"
 	Hysteria2Identifier   = "hysteria2"
 	TunIdentifier         = "tun"

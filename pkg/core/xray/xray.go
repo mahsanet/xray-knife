@@ -183,6 +183,8 @@ func usesUDP(ob *conf.OutboundDetourConfig) bool {
 	switch strings.ToLower(ob.Protocol) {
 	case "wireguard", "hysteria":
 		return true
+	case "masque":
+		return masqueTransport(ob) != "h2"
 	}
 	if ob.StreamSetting != nil && ob.StreamSetting.Network != nil {
 		switch strings.ToLower(string(*ob.StreamSetting.Network)) {

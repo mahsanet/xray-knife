@@ -316,7 +316,7 @@ func isUDP(gc protocol.GeneralConfig) bool {
 	}
 	for _, n := range []string{gc.Network, gc.Type} {
 		switch strings.ToLower(strings.TrimSpace(n)) {
-		case "kcp", "mkcp", "quic":
+		case "kcp", "mkcp", "quic", "udp":
 			return true
 		}
 	}

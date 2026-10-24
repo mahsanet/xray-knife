@@ -247,7 +247,7 @@ func isUDPBased(gc protocol.GeneralConfig) bool {
 	// on the protocol (vmess -> Network, vless/trojan -> Type), so check both.
 	for _, n := range []string{gc.Network, gc.Type} {
 		switch strings.ToLower(strings.TrimSpace(n)) {
-		case "kcp", "mkcp", "quic":
+		case "kcp", "mkcp", "quic", "udp":
 			return true
 		}
 	}

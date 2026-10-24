@@ -83,8 +83,8 @@ func fingerprintParsed(p protocol.Protocol, link string) (string, error) {
 	base, _, _ := strings.Cut(link, "#")
 	var u *url.URL
 	var err error
-	if strings.HasPrefix(base, "wireguard://") {
-		u, err = wireguardURL(base)
+	if scheme, _, _ := strings.Cut(base, "://"); scheme == "wireguard" || scheme == "masque" {
+		u, err = keyedURL(base, scheme)
 	} else {
 		u, err = url.Parse(moveHopPorts(base))
 	}
@@ -104,6 +104,9 @@ func fingerprintParsed(p protocol.Protocol, link string) (string, error) {
 			u.User = url.UserPassword(v.Encryption, v.Password)
 		case *xray.Socks:
 			u.User = url.UserPassword(v.Username, v.Password)
+		case *xray.Masque:
+			// The parsed key is a canonical PEM, whatever form the link used.
+			u.User = url.User(v.PrivateKey)
 		case *singbox.Socks:
 			u.User = url.UserPassword(v.Username, v.Password)
 		case *mtproto.MTProto:
@@ -254,23 +257,23 @@ func decodeIdentityBase64(s string) ([]byte, error) {
 // defaultPorts are the ports parsers assume when a link omits one.
 var defaultPorts = map[string]string{"hysteria2": "443", "hy2": "443", "ssh": "22"}
 
-// wireguardURL parses a WireGuard link by hand, like the parsers do: its
-// keys are standard base64, so an unescaped "/" would end the URL
+// keyedURL parses a WireGuard or MASQUE link by hand, like the parsers
+// do: its keys are standard base64, so an unescaped "/" would end the URL
 // authority early and a raw "+" would read as a space. Raw and
 // percent-encoded keys give the same URL.
-func wireguardURL(base string) (*url.URL, error) {
-	body := strings.TrimPrefix(base, "wireguard://")
+func keyedURL(base, scheme string) (*url.URL, error) {
+	body := strings.TrimPrefix(base, scheme+"://")
 	body, rawQuery, _ := strings.Cut(body, "?")
 	at := strings.LastIndex(body, "@")
 	if at < 0 {
-		return nil, errors.New("wireguard link without key")
+		return nil, errors.New(scheme + " link without key")
 	}
 	key, err := url.PathUnescape(strings.ReplaceAll(body[:at], "+", "%2B"))
 	if err != nil {
 		key = body[:at]
 	}
 	return &url.URL{
-		Scheme:   "wireguard",
+		Scheme:   scheme,
 		User:     url.User(key),
 		Host:     strings.TrimSuffix(body[at+1:], "/"),
 		RawQuery: strings.ReplaceAll(rawQuery, "+", "%2B"),

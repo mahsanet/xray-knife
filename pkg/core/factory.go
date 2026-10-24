@@ -130,7 +130,7 @@ func (c *AutomaticCore) selectCoreForLink(configLink string) (Core, error) {
 		}
 		return c.singboxCore, nil
 	case protocol.VmessIdentifier, protocol.VlessIdentifier, protocol.MVlessIdentifier, protocol.TrojanIdentifier, protocol.ShadowsocksIdentifier,
-		protocol.SocksIdentifier, "socks5", "socks5h", protocol.WireguardIdentifier:
+		protocol.SocksIdentifier, "socks5", "socks5h", protocol.WireguardIdentifier, protocol.MasqueIdentifier:
 		return c.xrayCore, nil
 	default:
 		return nil, fmt.Errorf("unsupported protocol for automatic core: %s", scheme)

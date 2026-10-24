@@ -69,7 +69,7 @@ func completeSubscriptionIDs(cmd *cobra.Command, args []string, toComplete strin
 }
 
 // knownProtocols are the protocol names stored in the configs table.
-var knownProtocols = []string{"vless", "mvless", "vmess", "trojan", "shadowsocks", "socks", "http", "wireguard", "hysteria2",
+var knownProtocols = []string{"vless", "mvless", "vmess", "trojan", "shadowsocks", "socks", "http", "wireguard", "masque", "hysteria2",
 	"hysteria", "tuic", "anytls", "ssh", "mtproto"}
 
 func completeProtocols(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

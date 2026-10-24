@@ -531,7 +531,7 @@ func TestSupportedProtocols(t *testing.T) {
 			t.Errorf("%s missing from %v", want, got)
 		}
 	}
-	if got["hysteria2"] != "sing-box" || got["mtproto"] != "mtproto" || got["mvless"] != "xray" {
+	if got["hysteria2"] != "sing-box" || got["mtproto"] != "mtproto" || got["mvless"] != "xray" || got["masque"] != "xray" {
 		t.Errorf("cores = %v", got)
 	}
 }
